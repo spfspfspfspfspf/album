@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">个性相册</string>
+    <string name="my_album">我的相册</string>
+    <string name="sort_by_folder">文件夹显示</string>
+    <string name="tab_photo">照片</string>
+    <string name="tab_album">相册</string>
+    <string name="tab_location">地点</string>
+    <string name="all_photo">所有照片</string>
+    <string name="default_title">相册</string>
+</resources>

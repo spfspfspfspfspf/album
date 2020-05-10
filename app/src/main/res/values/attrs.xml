@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="CustomViewPager">
+        <attr name="scrollEnabled" format="boolean" />
+    </declare-styleable>
+
+    <attr name="title" format="reference" />
+
+    <declare-styleable name="BackTitleBar">
+        <attr name="title" />
+    </declare-styleable>
+
+    <declare-styleable name="MainTitleBar">
+        <attr name="title" />
+    </declare-styleable>
+
+</resources>
