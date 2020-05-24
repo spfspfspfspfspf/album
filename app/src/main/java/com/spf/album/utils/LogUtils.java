@@ -24,5 +24,4 @@ public class LogUtils {
         }
         Log.d(TAG, message);
     }
-
 }

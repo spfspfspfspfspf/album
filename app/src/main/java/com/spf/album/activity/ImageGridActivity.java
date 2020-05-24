@@ -11,35 +11,43 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
-import androidx.databinding.DataBindingUtil;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.spf.album.ImageFile;
 import com.spf.album.R;
-import com.spf.album.databinding.ActivityImageGridBinding;
 import com.spf.album.utils.ImageLoadUtils;
 import com.spf.album.utils.ScreenUtils;
+import com.spf.album.view.BackTitleBar;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class ImageGridActivity extends AppCompatActivity {
+public class ImageGridActivity extends BaseActivity {
     private static final String KEY_TITLE = "key_title";
     private static final String KEY_IMAGE_FILE = "key_image_file";
-    private ActivityImageGridBinding binding;
+    private BackTitleBar titleBar;
+    private RecyclerView recyclerView;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        binding = DataBindingUtil.setContentView(this, R.layout.activity_image_grid);
+        setContentView(R.layout.activity_image_grid);
+        initView();
+        initData();
+    }
+
+    protected void initView() {
+        titleBar = findViewById(R.id.title_bar);
+        recyclerView = findViewById(R.id.recycler_view);
+        recyclerView.setLayoutManager(new GridLayoutManager(this, 4));
+    }
+
+    protected void initData() {
         Intent intent = getIntent();
-        String title = intent.getStringExtra(KEY_TITLE);
-        binding.titleBar.setTitle(title);
-        binding.recyclerView.setLayoutManager(new GridLayoutManager(this, 4));
-        binding.recyclerView.setAdapter(new ImageAdapter(this, intent.getParcelableArrayListExtra(KEY_IMAGE_FILE)));
+        titleBar.setTitle(intent.getStringExtra(KEY_TITLE));
+        recyclerView.setAdapter(new ImageAdapter(this, intent.getParcelableArrayListExtra(KEY_IMAGE_FILE)));
     }
 
     static class ImageAdapter extends RecyclerView.Adapter<ImageHolder> {

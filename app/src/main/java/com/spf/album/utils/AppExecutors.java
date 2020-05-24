@@ -3,23 +3,17 @@ package com.spf.album.utils;
 import android.os.Handler;
 import android.os.Looper;
 
-import androidx.annotation.NonNull;
-
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
 public class AppExecutors {
     private static AppExecutors instance;
-    private final Executor mBackgroundThread;
+    private final Executor mBackgroundExecutor;
     private final Handler mMainHandler;
 
-    private AppExecutors(Executor backgroundThread) {
-        this.mBackgroundThread = backgroundThread;
-        this.mMainHandler = new Handler(Looper.getMainLooper());
-    }
-
     private AppExecutors() {
-        this(Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors()));
+        this.mBackgroundExecutor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+        this.mMainHandler = new Handler(Looper.getMainLooper());
     }
 
     public synchronized static AppExecutors getInstance() {
@@ -30,7 +24,7 @@ public class AppExecutors {
     }
 
     public void runOnBackground(Runnable runnable) {
-        mBackgroundThread.execute(runnable);
+        mBackgroundExecutor.execute(runnable);
     }
 
     public void runOnUI(Runnable runnable) {
@@ -39,16 +33,5 @@ public class AppExecutors {
 
     public void runOnUI(Runnable runnable, long delay) {
         mMainHandler.postDelayed(runnable, delay);
-    }
-
-    private static class MainThreadExecutor implements Executor {
-        private Handler mainThreadHandler = new Handler(Looper.getMainLooper());
-
-        @Override
-        public void execute(@NonNull Runnable command) {
-            mainThreadHandler.post(command);
-        }
-
-
     }
 }

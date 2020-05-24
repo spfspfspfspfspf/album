@@ -1,5 +1,6 @@
 package com.spf.album.activity;
 
+import android.Manifest;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Build;
@@ -34,11 +35,18 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MainActivity extends BaseActivity implements View.OnClickListener {
+import pub.devrel.easypermissions.EasyPermissions;
+
+public class MainActivity extends BaseActivity implements View.OnClickListener, EasyPermissions.PermissionCallbacks {
     private static final String KEY_TAB = "key_tab";
     private static final int TAB_PHOTO = 0;
     private static final int TAB_ALBUM = 1;
     private static final int TAB_LOCATION = 2;
+
+    private final int REQUEST_CODE = 10;
+    private final String[] permissions = new String[]{
+            Manifest.permission.READ_EXTERNAL_STORAGE,
+            Manifest.permission.WRITE_EXTERNAL_STORAGE};
 
     private ActivityMainBinding binding;
     private PhotoFragment photoFragment;
@@ -52,8 +60,33 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
         binding = DataBindingUtil.setContentView(this, R.layout.activity_main);
         initFragment(savedInstanceState);
         initBottomBar();
-        LoaderManager.getInstance(this).initLoader(0, null, mLoaderCallback);
         EventBus.getDefault().register(this);
+
+        if (EasyPermissions.hasPermissions(this, permissions)) {
+            LoaderManager.getInstance(this).initLoader(0, null, mLoaderCallback);
+        } else {
+            EasyPermissions.requestPermissions(this, "为了正常使用应用，需要读写存储权限", REQUEST_CODE, permissions);
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        EasyPermissions.onRequestPermissionsResult(requestCode, permissions, grantResults, this);
+    }
+
+    @Override
+    public void onPermissionsGranted(int requestCode, @NonNull List<String> perms) {
+        if (requestCode == REQUEST_CODE) {
+            LoaderManager.getInstance(this).initLoader(0, null, mLoaderCallback);
+        }
+    }
+
+    @Override
+    public void onPermissionsDenied(int requestCode, @NonNull List<String> perms) {
+        if (requestCode == REQUEST_CODE) {
+            finish();
+        }
     }
 
     private void initFragment(Bundle bundle) {
