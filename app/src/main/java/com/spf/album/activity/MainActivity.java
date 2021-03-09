@@ -19,13 +19,14 @@ import androidx.loader.content.CursorLoader;
 import androidx.loader.content.Loader;
 import androidx.viewpager.widget.ViewPager;
 
-import com.spf.album.ImageFile;
 import com.spf.album.R;
 import com.spf.album.databinding.ActivityMainBinding;
 import com.spf.album.event.LatLntImageClickEvent;
 import com.spf.album.fragment.AlbumFragment;
 import com.spf.album.fragment.LocationFragment;
 import com.spf.album.fragment.PhotoFragment;
+import com.spf.album.model.ImageFile;
+import com.spf.album.utils.AppExecutors;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -107,11 +108,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
         fragments.add(locationFragment);
         binding.viewPager.setAdapter(new MainPageAdapter(fragmentManager, fragments));
         binding.viewPager.setOffscreenPageLimit(fragments.size());
-        binding.viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
-            @Override
-            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
-            }
-
+        binding.viewPager.addOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
             @Override
             public void onPageSelected(int position) {
                 currentTab = position;
@@ -221,15 +218,14 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
 
         @Override
         public void onLoadFinished(@NonNull Loader<Cursor> loader, Cursor data) {
-            if (!isFinishing() && data != null) {
-                int count = data.getCount();
-                if (count > 0) {
+            if (!isFinishing() && data != null && data.getCount() > 0) {
+                AppExecutors.getInstance().runOnBackground(() -> {
                     List<ImageFile> allImageFileList = new ArrayList<>();
                     List<ImageFile> cameraImageFileList = new ArrayList<>();
                     String cameraPath = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM), "Camera").getAbsolutePath();
                     data.moveToFirst();
                     do {
-                        ImageFile imageFile = ImageFile.createImageFile(data);
+                        ImageFile imageFile = ImageFile.createImageFile(getApplicationContext(), data);
                         if (imageFile != null) {
                             allImageFileList.add(imageFile);
                             if (imageFile.getPath().contains(cameraPath)) {
@@ -240,7 +236,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
                     photoFragment.setImageFileList(cameraImageFileList);
                     albumFragment.setImageFileList(allImageFileList);
                     locationFragment.setImageFileList(cameraImageFileList);
-                }
+                });
             }
         }
 

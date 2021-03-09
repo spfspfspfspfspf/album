@@ -1,10 +1,10 @@
-package com.spf.album;
+package com.spf.album.model;
 
 import android.content.ContentUris;
+import android.content.Context;
 import android.database.Cursor;
 import android.media.MediaMetadataRetriever;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.provider.MediaStore;
@@ -79,7 +79,7 @@ public class ImageFile implements Parcelable {
         return imageFile;
     }
 
-    public static ImageFile createImageFile(Cursor data) {
+    public static ImageFile createImageFile(Context context, Cursor data) {
         String path = data.getString(data.getColumnIndexOrThrow(IMAGE_PROJECTION[1]));
         if (!TextUtils.isEmpty(path) && new File(path).exists()) {
             ImageFile imageFile = new ImageFile();
@@ -93,9 +93,9 @@ public class ImageFile implements Parcelable {
             imageFile.latitude = data.getDouble(data.getColumnIndexOrThrow(IMAGE_PROJECTION[7]));
             imageFile.longitude = data.getDouble(data.getColumnIndexOrThrow(IMAGE_PROJECTION[8]));
 
-            if (imageFile.mediaType != null && imageFile.mediaType.startsWith("image")) {
+            if (imageFile.isImage()) {
                 imageFile.uri = ContentUris.withAppendedId(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, imageFile.id);
-            } else if (imageFile.mediaType != null && imageFile.mediaType.startsWith("video")) {
+            } else if (imageFile.isVideo()) {
                 imageFile.uri = ContentUris.withAppendedId(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, imageFile.id);
                 imageFile.duration = getLocalVideoDuration(imageFile.path);
             } else {
@@ -162,11 +162,6 @@ public class ImageFile implements Parcelable {
         return longitude;
     }
 
-    public void setLatLng(double latitude, double longitude) {
-        this.latitude = latitude;
-        this.longitude = longitude;
-    }
-
     public Uri getUri() {
         return uri;
     }
@@ -175,8 +170,17 @@ public class ImageFile implements Parcelable {
         return latLng;
     }
 
+    public void setLatLng(double latitude, double longitude) {
+        this.latitude = latitude;
+        this.longitude = longitude;
+    }
+
     public void setLatLng(LatLng latLng) {
         this.latLng = latLng;
+    }
+
+    public boolean isImage() {
+        return mediaType != null && mediaType.startsWith("image");
     }
 
     public boolean isVideo() {
@@ -210,7 +214,7 @@ public class ImageFile implements Parcelable {
 
     @Override
     public int hashCode() {
-        return path.hashCode();
+        return uri.hashCode();
     }
 
     @Override
@@ -219,7 +223,7 @@ public class ImageFile implements Parcelable {
             return false;
         }
         if (obj instanceof ImageFile) {
-            return path.equals(((ImageFile) obj).path);
+            return uri.equals(((ImageFile) obj).uri);
         }
         return false;
     }

@@ -11,6 +11,7 @@ import com.bumptech.glide.RequestBuilder;
 import com.bumptech.glide.load.Transformation;
 import com.bumptech.glide.load.resource.bitmap.BitmapTransformation;
 import com.bumptech.glide.load.resource.bitmap.CenterCrop;
+import com.bumptech.glide.load.resource.bitmap.CenterInside;
 import com.bumptech.glide.load.resource.bitmap.FitCenter;
 import com.bumptech.glide.load.resource.bitmap.RoundedCorners;
 
@@ -26,7 +27,7 @@ public class ImageLoadUtils {
         imageLoader.loadImage(imageBuilder);
     }
 
-    public static Bitmap getBitmap(ImageBuilder imageBuilder) throws Exception {
+    public static Bitmap getBitmap(ImageBuilder imageBuilder) {
         return imageLoader.getBitmap(imageBuilder);
     }
 
@@ -34,9 +35,9 @@ public class ImageLoadUtils {
         private Context context;
         private Uri uri;
         private ImageView imageView;
+        private ImageView.ScaleType scaleType;
         private int width;
         private int height;
-        private ImageView.ScaleType scaleType;
         private int roundCorner;
         private int placeHolder;
 
@@ -75,7 +76,7 @@ public class ImageLoadUtils {
     private interface ImageLoader {
         void loadImage(ImageBuilder imageBuilder);
 
-        Bitmap getBitmap(ImageBuilder imageBuilder) throws Exception;
+        Bitmap getBitmap(ImageBuilder imageBuilder);
     }
 
     private static class GlideImageLoader implements ImageLoader {
@@ -99,7 +100,7 @@ public class ImageLoadUtils {
         }
 
         @Override
-        public Bitmap getBitmap(ImageBuilder imageBuilder) throws ExecutionException, InterruptedException {
+        public Bitmap getBitmap(ImageBuilder imageBuilder) {
             RequestBuilder<Bitmap> requestBuilder = Glide.with(imageBuilder.context).asBitmap().load(imageBuilder.uri);
             if (imageBuilder.placeHolder > 0) {
                 requestBuilder = requestBuilder.placeholder(imageBuilder.placeHolder);
@@ -114,7 +115,12 @@ public class ImageLoadUtils {
                 requestBuilder = requestBuilder.override(imageBuilder.width, imageBuilder.height);
             }
 
-            return requestBuilder.submit().get();
+            try {
+                return requestBuilder.submit().get();
+            } catch (ExecutionException | InterruptedException e) {
+                e.printStackTrace();
+            }
+            return null;
         }
 
         private Transformation<Bitmap>[] getTransformations(ImageBuilder imageBuilder) {
@@ -137,6 +143,8 @@ public class ImageLoadUtils {
         private Transformation<Bitmap> getScaleTypeTransform(ImageView.ScaleType scaleType) {
             if (scaleType == ImageView.ScaleType.CENTER_CROP) {
                 return new CenterCrop();
+            } else if (scaleType == ImageView.ScaleType.CENTER_INSIDE) {
+                return new CenterInside();
             } else if (scaleType == ImageView.ScaleType.FIT_CENTER) {
                 return new FitCenter();
             }

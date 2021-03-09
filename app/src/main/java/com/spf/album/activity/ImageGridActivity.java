@@ -11,12 +11,11 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.spf.album.ImageFile;
 import com.spf.album.R;
+import com.spf.album.model.ImageFile;
 import com.spf.album.utils.ImageLoadUtils;
 import com.spf.album.utils.ScreenUtils;
 import com.spf.album.view.BackTitleBar;
@@ -30,6 +29,8 @@ public class ImageGridActivity extends BaseActivity {
     private BackTitleBar titleBar;
     private RecyclerView recyclerView;
 
+    private final int COLUMN_COUNT = 4;
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -41,32 +42,34 @@ public class ImageGridActivity extends BaseActivity {
     protected void initView() {
         titleBar = findViewById(R.id.title_bar);
         recyclerView = findViewById(R.id.recycler_view);
-        recyclerView.setLayoutManager(new GridLayoutManager(this, 4));
+        recyclerView.setLayoutManager(new GridLayoutManager(this, COLUMN_COUNT));
     }
 
     protected void initData() {
         Intent intent = getIntent();
         titleBar.setTitle(intent.getStringExtra(KEY_TITLE));
-        recyclerView.setAdapter(new ImageAdapter(this, intent.getParcelableArrayListExtra(KEY_IMAGE_FILE)));
+        recyclerView.setAdapter(new ImageAdapter(this, intent.getParcelableArrayListExtra(KEY_IMAGE_FILE), COLUMN_COUNT));
     }
 
     static class ImageAdapter extends RecyclerView.Adapter<ImageHolder> {
         private Context context;
         private List<ImageFile> imageFileList;
+        private int imageSize;
 
-        ImageAdapter(Context context, List<ImageFile> imageFileList) {
+        ImageAdapter(Context context, List<ImageFile> imageFileList, int columnCount) {
             this.context = context;
             this.imageFileList = imageFileList;
+            imageSize = (ScreenUtils.getScreenWidth(context) - context.getResources().getDimensionPixelOffset(R.dimen.dp_50)) / columnCount;
         }
 
         @NonNull
         @Override
         public ImageHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
             ImageHolder imageHolder = new ImageHolder(LayoutInflater.from(context).inflate(R.layout.item_date_image, parent, false));
-            ViewGroup.LayoutParams params = imageHolder.clRoot.getLayoutParams();
-            params.width = ScreenUtils.getScreenWidth(context) / 4;
-            params.height = params.width;
-            imageHolder.clRoot.setLayoutParams(params);
+            ViewGroup.LayoutParams params = imageHolder.ivImage.getLayoutParams();
+            params.width = imageSize;
+            params.height = imageSize;
+            imageHolder.ivImage.setLayoutParams(params);
             return imageHolder;
         }
 
@@ -74,7 +77,7 @@ public class ImageGridActivity extends BaseActivity {
         public void onBindViewHolder(@NonNull ImageHolder holder, int position) {
             ImageFile imageFile = imageFileList.get(position);
             ImageLoadUtils.loadImage(new ImageLoadUtils.ImageBuilder(context, imageFile.getUri(), holder.ivImage)
-                    .setPlaceHolder(R.drawable.ic_image_placeholder_rect));
+                    .setPlaceHolder(R.drawable.ic_image_placeholder_rect).setSize(imageSize, imageSize));
             if (imageFile.isVideo()) {
                 holder.ivPlay.setVisibility(View.VISIBLE);
                 holder.tvDuration.setVisibility(View.VISIBLE);
@@ -83,7 +86,7 @@ public class ImageGridActivity extends BaseActivity {
                 holder.ivPlay.setVisibility(View.GONE);
                 holder.tvDuration.setVisibility(View.GONE);
             }
-            holder.clRoot.setOnClickListener(v -> ImagePreviewActivity.start(context, holder.getAdapterPosition(), imageFileList));
+            holder.itemView.setOnClickListener(v -> ImagePreviewActivity.start(context, holder.getAdapterPosition(), (ArrayList<ImageFile>) imageFileList));
         }
 
         @Override
@@ -93,14 +96,12 @@ public class ImageGridActivity extends BaseActivity {
     }
 
     static class ImageHolder extends RecyclerView.ViewHolder {
-        private ConstraintLayout clRoot;
         private ImageView ivImage;
         private ImageView ivPlay;
         private TextView tvDuration;
 
         ImageHolder(@NonNull View itemView) {
             super(itemView);
-            clRoot = itemView.findViewById(R.id.cl_root);
             ivImage = itemView.findViewById(R.id.iv_image);
             ivPlay = itemView.findViewById(R.id.iv_play);
             tvDuration = itemView.findViewById(R.id.tv_duration);

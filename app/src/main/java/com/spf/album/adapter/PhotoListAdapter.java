@@ -9,7 +9,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.spf.album.ImageFile;
+import com.spf.album.model.ImageFile;
 import com.spf.album.R;
 import com.spf.album.view.PhotoItemView;
 

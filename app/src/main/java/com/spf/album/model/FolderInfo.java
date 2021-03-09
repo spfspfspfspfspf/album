@@ -1,9 +1,8 @@
-package com.spf.album;
+package com.spf.album.model;
 
 import android.net.Uri;
 
 import java.util.ArrayList;
-import java.util.List;
 
 public class FolderInfo {
     private String path;

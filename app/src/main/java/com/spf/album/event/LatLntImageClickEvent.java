@@ -1,6 +1,6 @@
 package com.spf.album.event;
 
-import com.spf.album.ImageFile;
+import com.spf.album.model.ImageFile;
 
 public class LatLntImageClickEvent {
     private ImageFile imageFile;

@@ -2,9 +2,7 @@ package com.spf.album.activity;
 
 import android.content.Context;
 import android.content.Intent;
-import android.net.Uri;
 import android.os.Bundle;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
@@ -14,10 +12,11 @@ import androidx.annotation.Nullable;
 import androidx.viewpager.widget.PagerAdapter;
 import androidx.viewpager.widget.ViewPager;
 
+import com.github.chrisbanes.photoview.PhotoView;
 import com.shuyu.gsyvideoplayer.GSYVideoManager;
 import com.shuyu.gsyvideoplayer.video.StandardGSYVideoPlayer;
-import com.spf.album.ImageFile;
 import com.spf.album.R;
+import com.spf.album.model.ImageFile;
 import com.spf.album.utils.ImageLoadUtils;
 import com.spf.album.utils.LogUtils;
 import com.spf.album.view.CustomViewPager;
@@ -27,8 +26,7 @@ import java.util.List;
 
 public class ImagePreviewActivity extends BaseActivity {
     private static final String KEY_INDEX = "key_index";
-    private static final String KEY_PATH = "key_path";
-    private static final String KEY_URI = "key_uri";
+    private static final String KEY_FILE = "key_file";
     private CustomViewPager viewPager;
 
     @Override
@@ -41,7 +39,7 @@ public class ImagePreviewActivity extends BaseActivity {
 
     protected void initView() {
         viewPager = findViewById(R.id.view_pager);
-        viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+        viewPager.addOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
             @Override
             public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
                 LogUtils.d(TAG, "getPlayPosition: " + GSYVideoManager.instance().getPlayPosition());
@@ -49,22 +47,12 @@ public class ImagePreviewActivity extends BaseActivity {
                     GSYVideoManager.releaseAllVideos();
                 }
             }
-
-            @Override
-            public void onPageSelected(int position) {
-            }
-
-            @Override
-            public void onPageScrollStateChanged(int state) {
-            }
         });
     }
 
     protected void initData() {
         Intent intent = getIntent();
-        viewPager.setAdapter(new ImagePagerAdapter(this,
-                intent.getStringArrayListExtra(KEY_PATH),
-                intent.getParcelableArrayListExtra(KEY_URI)));
+        viewPager.setAdapter(new ImagePagerAdapter(this, intent.getParcelableArrayListExtra(KEY_FILE)));
         viewPager.setCurrentItem(intent.getIntExtra(KEY_INDEX, 0));
     }
 
@@ -86,37 +74,28 @@ public class ImagePreviewActivity extends BaseActivity {
         GSYVideoManager.releaseAllVideos();
     }
 
-    public static void start(Context context, int index, List<ImageFile> imageFileList) {
+    public static void start(Context context, int index, ArrayList<ImageFile> imageFileList) {
         if (imageFileList == null || imageFileList.isEmpty()) {
             return;
         }
         Intent intent = new Intent(context, ImagePreviewActivity.class);
         intent.putExtra(KEY_INDEX, index);
-        ArrayList<String> pathList = new ArrayList<>(imageFileList.size());
-        ArrayList<Uri> uriList = new ArrayList<>(imageFileList.size());
-        for (ImageFile imageFile : imageFileList) {
-            pathList.add(imageFile.getPath());
-            uriList.add(imageFile.getUri());
-        }
-        intent.putStringArrayListExtra(KEY_PATH, pathList);
-        intent.putParcelableArrayListExtra(KEY_URI, uriList);
+        intent.putParcelableArrayListExtra(KEY_FILE, imageFileList);
         context.startActivity(intent);
     }
 
     static class ImagePagerAdapter extends PagerAdapter {
         private Context context;
-        private List<String> pathList;
-        private List<Uri> uriList;
+        private List<ImageFile> imageFiles;
 
-        ImagePagerAdapter(Context context, List<String> pathList, List<Uri> uriList) {
+        ImagePagerAdapter(Context context, List<ImageFile> imageFiles) {
             this.context = context;
-            this.pathList = pathList;
-            this.uriList = uriList;
+            this.imageFiles = imageFiles;
         }
 
         @Override
         public int getCount() {
-            return uriList == null ? 0 : uriList.size();
+            return imageFiles == null ? 0 : imageFiles.size();
         }
 
         @Override
@@ -127,17 +106,25 @@ public class ImagePreviewActivity extends BaseActivity {
         @NonNull
         @Override
         public Object instantiateItem(@NonNull ViewGroup container, int position) {
-            View view = LayoutInflater.from(container.getContext()).inflate(R.layout.item_image_preview, container, false);
-            container.addView(view, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
-            ImageLoadUtils.loadImage(new ImageLoadUtils.ImageBuilder(context, uriList.get(position), view.findViewById(R.id.pv_image))
-                    .setScaleType(ImageView.ScaleType.FIT_CENTER));
-            if (pathList != null && pathList.size() > position && pathList.get(position).endsWith("mp4")) {
-                StandardGSYVideoPlayer videoPlayer = view.findViewById(R.id.video_player);
-                videoPlayer.setVisibility(View.VISIBLE);
-                initVideoPlayer(videoPlayer, pathList.get(position));
-                //videoPlayer.setThumbImageView(view.findViewById(R.id.pv_image));
+            ImageFile imageFile = imageFiles.get(position);
+            if (imageFile.isVideo()) {
+                ImageView thumbImageView = new ImageView(context);
+                thumbImageView.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+                ImageLoadUtils.loadImage(new ImageLoadUtils.ImageBuilder(context, imageFile.getUri(), thumbImageView)
+                        .setScaleType(ImageView.ScaleType.FIT_CENTER));
+
+                StandardGSYVideoPlayer videoPlayer = new StandardGSYVideoPlayer(context);
+                initVideoPlayer(videoPlayer, imageFile.getPath(), thumbImageView);
+
+                container.addView(videoPlayer, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+                return videoPlayer;
+            } else {
+                PhotoView photoView = new PhotoView(context);
+                container.addView(photoView, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+                ImageLoadUtils.loadImage(new ImageLoadUtils.ImageBuilder(context, imageFile.getUri(), photoView)
+                        .setScaleType(ImageView.ScaleType.FIT_CENTER));
+                return photoView;
             }
-            return view;
         }
 
         @Override
@@ -145,8 +132,10 @@ public class ImagePreviewActivity extends BaseActivity {
             container.removeView((View) object);
         }
 
-        private void initVideoPlayer(StandardGSYVideoPlayer videoPlayer, String path) {
+        private void initVideoPlayer(StandardGSYVideoPlayer videoPlayer, String path, ImageView thumbImageView) {
             videoPlayer.setUpLazy(path, true, null, null, "");
+            videoPlayer.getThumbImageViewLayout().setVisibility(View.VISIBLE);
+            videoPlayer.setThumbImageView(thumbImageView);
             //增加title
             videoPlayer.getTitleTextView().setVisibility(View.GONE);
             //设置返回键

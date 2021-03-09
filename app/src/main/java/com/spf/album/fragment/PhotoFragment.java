@@ -10,12 +10,13 @@ import androidx.annotation.Nullable;
 import androidx.databinding.DataBindingUtil;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
-import com.spf.album.ImageFile;
+import com.spf.album.model.ImageFile;
 import com.spf.album.activity.ImagePreviewActivity;
 import com.spf.album.adapter.PhotoListAdapter;
 import com.spf.album.R;
 import com.spf.album.databinding.FragmentPhotoBinding;
 import com.spf.album.event.PhotoImageClickEvent;
+import com.spf.album.utils.AppExecutors;
 import com.spf.album.utils.DateUtils;
 
 import org.greenrobot.eventbus.EventBus;
@@ -59,7 +60,7 @@ public class PhotoFragment extends BaseFragment {
             }
             dateImageList.add(imageFile);
         }
-        photoListAdapter.setImageFiles(imageFileMap);
+        AppExecutors.getInstance().runOnUI(() -> photoListAdapter.setImageFiles(imageFileMap));
     }
 
     public void scrollToImage(ImageFile imageFile) {
@@ -77,7 +78,7 @@ public class PhotoFragment extends BaseFragment {
                 break;
             }
         }
-        ImagePreviewActivity.start(getContext(), index, imageFileList);
+        ImagePreviewActivity.start(getContext(), index, (ArrayList<ImageFile>) imageFileList);
     }
 
     @Override

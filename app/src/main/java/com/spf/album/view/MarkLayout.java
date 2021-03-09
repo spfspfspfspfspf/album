@@ -14,7 +14,8 @@ import android.view.View;
 
 import androidx.annotation.Nullable;
 
-import com.spf.album.ImageFile;
+import com.spf.album.IScreenLocation;
+import com.spf.album.model.ImageFile;
 import com.spf.album.event.LatLntImageClickEvent;
 import com.spf.album.utils.LogUtils;
 import com.spf.album.R;
@@ -22,25 +23,28 @@ import com.spf.album.R;
 import org.greenrobot.eventbus.EventBus;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
-public class ImageDrawView extends View {
+public class MarkLayout extends View {
     private static final String TAG = "ImageDrawView";
     private Paint textPaint;
     private float textDistance;
     public static int radius;
-    private Map<ImageFile, AreaImageInfo> mImagePointMap = new HashMap<>();
+    private Map<ImageFile, MarkInfo> mMarkMap = new HashMap<>();
+    private IScreenLocation iScreenLocation;
+    private volatile boolean isSettingMarks = false;
 
-    public ImageDrawView(Context context) {
+    public MarkLayout(Context context) {
         super(context);
         initView();
     }
 
-    public ImageDrawView(Context context, @Nullable AttributeSet attrs) {
+    public MarkLayout(Context context, @Nullable AttributeSet attrs) {
         this(context, attrs, 0);
     }
 
-    public ImageDrawView(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
+    public MarkLayout(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
         initView();
     }
@@ -59,8 +63,22 @@ public class ImageDrawView extends View {
         radius = getContext().getResources().getDimensionPixelOffset(R.dimen.dp_30);
     }
 
-    public void setPoints(Map<ImageFile, AreaImageInfo> points) {
-        mImagePointMap = points;
+    public void setScreenLocation(IScreenLocation iScreenLocation) {
+        this.iScreenLocation = iScreenLocation;
+    }
+
+    public void updateMarks() {
+        for (Map.Entry<ImageFile, MarkLayout.MarkInfo> entry : mMarkMap.entrySet()) {
+            entry.getValue().setArea(iScreenLocation.toScreenLocation(entry.getKey()));
+        }
+        invalidate();
+    }
+
+    public void setMarks(Map<ImageFile, MarkInfo> marks) {
+        mMarkMap.clear();
+        if(marks != null && marks.size() > 0) {
+            mMarkMap.putAll(marks);
+        }
         invalidate();
     }
 
@@ -70,13 +88,13 @@ public class ImageDrawView extends View {
         int y = (int) event.getY();
         int action = event.getAction();
         if(action == MotionEvent.ACTION_DOWN) {
-            for (Map.Entry<ImageFile, AreaImageInfo> entry : mImagePointMap.entrySet()) {
+            for (Map.Entry<ImageFile, MarkInfo> entry : mMarkMap.entrySet()) {
                 if (entry.getValue().area.contains(x, y)) {
                     return true;
                 }
             }
         } else if (event.getAction() == MotionEvent.ACTION_UP) {
-            for (Map.Entry<ImageFile, AreaImageInfo> entry : mImagePointMap.entrySet()) {
+            for (Map.Entry<ImageFile, MarkInfo> entry : mMarkMap.entrySet()) {
                 if (entry.getValue().area.contains(x, y)) {
                     EventBus.getDefault().post(new LatLntImageClickEvent(entry.getKey()));
                     return true;
@@ -88,23 +106,23 @@ public class ImageDrawView extends View {
 
     @Override
     protected void onDraw(Canvas canvas) {
-        for (AreaImageInfo info : mImagePointMap.values()) {
-            if (info.getBitmap() == null || info.getBitmap().isRecycled()) {
-                LogUtils.d(TAG, "bitmap recycled - " + info.getImageUri());
+        for (MarkInfo mark : mMarkMap.values()) {
+            if (mark.getBitmap() == null || mark.getBitmap().isRecycled()) {
+                LogUtils.d(TAG, "bitmap recycled - " + mark.getImageUri());
             } else {
-                canvas.drawBitmap(info.bitmap, info.area.left, info.area.top, null);
-                canvas.drawText(String.valueOf(info.count), info.area.centerX(), info.area.centerY() + textDistance, textPaint);
+                canvas.drawBitmap(mark.bitmap, mark.area.left, mark.area.top, null);
+                canvas.drawText(String.valueOf(mark.count), mark.area.centerX(), mark.area.centerY() + textDistance, textPaint);
             }
         }
     }
 
-    public static class AreaImageInfo {
+    public static class MarkInfo {
         private Rect area;
         private Uri imageUri;
         private Bitmap bitmap;
         private int count;
 
-        public AreaImageInfo(Point point, Uri imageUri) {
+        public MarkInfo(Point point, Uri imageUri) {
             this.area = new Rect(point.x - radius, point.y - radius,
                     point.x + radius, point.y + radius);
             this.imageUri = imageUri;
