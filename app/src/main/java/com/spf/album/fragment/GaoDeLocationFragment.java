@@ -10,32 +10,32 @@ import android.widget.ImageView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.exifinterface.media.ExifInterface;
 
 import com.amap.api.maps.AMap;
-import com.amap.api.maps.CoordinateConverter;
 import com.amap.api.maps.MapView;
 import com.amap.api.maps.model.CameraPosition;
-import com.amap.api.maps.model.LatLng;
 import com.spf.album.IScreenLocation;
+import com.spf.album.ImageFileLoader;
 import com.spf.album.R;
+import com.spf.album.event.ImageFileLoadedEvent;
+import com.spf.album.model.GaoDeImageFile;
 import com.spf.album.model.ImageFile;
 import com.spf.album.utils.AppExecutors;
 import com.spf.album.utils.ImageLoadUtils;
 import com.spf.album.utils.LogUtils;
 import com.spf.album.view.MarkLayout;
 
-import java.io.IOException;
-import java.util.ArrayList;
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
+
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
-public class LocationFragment extends BaseFragment implements IScreenLocation {
+public class GaoDeLocationFragment extends BaseFragment implements IScreenLocation {
     private MapView mapView;
     private MarkLayout markLayout;
     private AMap mMap;
-    private List<ImageFile> mImageFileList = new ArrayList<>();
     private Map<ImageFile, MarkLayout.MarkInfo> mMarkMap = new HashMap<>();
 
     private volatile boolean isFileListInit = false;
@@ -51,6 +51,7 @@ public class LocationFragment extends BaseFragment implements IScreenLocation {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        EventBus.getDefault().register(this);
         mapView = view.findViewById(R.id.map_view);
         markLayout = view.findViewById(R.id.mark_layout);
         initMap(savedInstanceState);
@@ -83,60 +84,29 @@ public class LocationFragment extends BaseFragment implements IScreenLocation {
 
     @Override
     public Point toScreenLocation(ImageFile imageFile) {
-        return mMap.getProjection().toScreenLocation(imageFile.getLatLng());
+        return mMap.getProjection().toScreenLocation(((GaoDeImageFile) imageFile).getLatLng());
     }
 
     @Override
     public boolean isInVisibleRegion(ImageFile imageFile) {
-        return mMap.getProjection().getVisibleRegion().latLngBounds.contains(imageFile.getLatLng());
+        return mMap.getProjection().getVisibleRegion().latLngBounds.contains(((GaoDeImageFile) imageFile).getLatLng());
     }
 
-    //called in the background
-    public void setImageFileList(List<ImageFile> imageFileList) {
-        if (mActivity == null || mActivity.isFinishing()) {
-            return;
-        }
-        isFileListInit = false;
-        if (imageFileList == null || imageFileList.isEmpty()) {
-            mImageFileList.clear();
-        } else {
-            CoordinateConverter converter = new CoordinateConverter(mActivity);
-            converter.from(CoordinateConverter.CoordType.GPS);
-            for (ImageFile imageFile : imageFileList) {
-                if (mActivity == null || isDetached()) {
-                    return;
-                }
-
-                if (imageFile.getLatitude() == 0 && imageFile.getLongitude() == 0) {
-                    try {
-                        double[] latLng = new ExifInterface(imageFile.getPath()).getLatLong();
-                        if (latLng != null) {
-                            imageFile.setLatLng(latLng[0], latLng[1]);
-                        }
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                }
-
-                if (imageFile.getLatitude() != 0 && imageFile.getLongitude() != 0) {
-                    converter.coord(new LatLng(imageFile.getLatitude(), imageFile.getLongitude()));
-                    imageFile.setLatLng(converter.convert());
-                }
-            }
-            mImageFileList = imageFileList;
-        }
+    @Subscribe(threadMode = ThreadMode.BACKGROUND)
+    public void onEventImageFileLoaded(ImageFileLoadedEvent event) {
         isFileListInit = true;
     }
 
     private void setMarks() {
         if (!isFileListInit) {
-            AppExecutors.getInstance().runOnUI(LocationFragment.this::setMarks, 1000);
+            AppExecutors.getInstance().runOnUI(GaoDeLocationFragment.this::setMarks, 1000);
             return;
         }
         mMarkMap.clear();
         isImageBitmapInit = false;
         AppExecutors.getInstance().runOnBackground(() -> {
-            for (ImageFile imageFile : mImageFileList) {
+            for (ImageFile item : ImageFileLoader.getInstance().getCameraList()) {
+                GaoDeImageFile imageFile = (GaoDeImageFile) item;
                 if (imageFile.getLatLng() == null) {
                     continue;
                 }
@@ -194,5 +164,6 @@ public class LocationFragment extends BaseFragment implements IScreenLocation {
     public void onDestroyView() {
         super.onDestroyView();
         mapView.onDestroy();
+        EventBus.getDefault().unregister(this);
     }
 }

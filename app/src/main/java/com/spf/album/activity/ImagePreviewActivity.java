@@ -2,9 +2,14 @@ package com.spf.album.activity;
 
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
+import android.os.Build;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.ImageView;
 
 import androidx.annotation.NonNull;
@@ -15,26 +20,41 @@ import androidx.viewpager.widget.ViewPager;
 import com.github.chrisbanes.photoview.PhotoView;
 import com.shuyu.gsyvideoplayer.GSYVideoManager;
 import com.shuyu.gsyvideoplayer.video.StandardGSYVideoPlayer;
+import com.spf.album.ImageFileLoader;
 import com.spf.album.R;
+import com.spf.album.model.FolderInfo;
 import com.spf.album.model.ImageFile;
 import com.spf.album.utils.ImageLoadUtils;
 import com.spf.album.utils.LogUtils;
 import com.spf.album.view.CustomViewPager;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class ImagePreviewActivity extends BaseActivity {
+    private static final String TAG = ImagePreviewActivity.class.getSimpleName();
     private static final String KEY_INDEX = "key_index";
-    private static final String KEY_FILE = "key_file";
+    private static final String KEY_PATH = "key_path";
     private CustomViewPager viewPager;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_image_preview);
+        initStatusBar();
         initView();
         initData();
+    }
+
+    private void initStatusBar() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            Window window = getWindow();
+            window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
+            window.setStatusBarColor(Color.BLACK);
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                window.getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_STABLE);
+            }
+        }
     }
 
     protected void initView() {
@@ -51,9 +71,24 @@ public class ImagePreviewActivity extends BaseActivity {
     }
 
     protected void initData() {
-        Intent intent = getIntent();
-        viewPager.setAdapter(new ImagePagerAdapter(this, intent.getParcelableArrayListExtra(KEY_FILE)));
-        viewPager.setCurrentItem(intent.getIntExtra(KEY_INDEX, 0));
+        String path = getIntent().getStringExtra(KEY_PATH);
+        if (TextUtils.isEmpty(path)) {
+            finish();
+            return;
+        }
+        FolderInfo folderInfo = null;
+        for (FolderInfo item : ImageFileLoader.getInstance().getFolderList()) {
+            if (path.contains(item.getPath())) {
+                folderInfo = item;
+                break;
+            }
+        }
+        if (folderInfo == null) {
+            finish();
+            return;
+        }
+        viewPager.setAdapter(new ImagePagerAdapter(this, folderInfo.getImageFiles()));
+        viewPager.setCurrentItem(getIntent().getIntExtra(KEY_INDEX, 0));
     }
 
     @Override
@@ -74,13 +109,13 @@ public class ImagePreviewActivity extends BaseActivity {
         GSYVideoManager.releaseAllVideos();
     }
 
-    public static void start(Context context, int index, ArrayList<ImageFile> imageFileList) {
-        if (imageFileList == null || imageFileList.isEmpty()) {
+    public static void start(Context context, int index, String path) {
+        if (TextUtils.isEmpty(path)) {
             return;
         }
         Intent intent = new Intent(context, ImagePreviewActivity.class);
         intent.putExtra(KEY_INDEX, index);
-        intent.putParcelableArrayListExtra(KEY_FILE, imageFileList);
+        intent.putExtra(KEY_PATH, path);
         context.startActivity(intent);
     }
 

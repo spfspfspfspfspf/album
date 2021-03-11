@@ -41,7 +41,7 @@ public class PhotoItemView extends ConstraintLayout {
         ivPlay = findViewById(R.id.iv_play);
         tvDuration = findViewById(R.id.tv_duration);
 
-        imageSize = (ScreenUtils.getScreenWidth(context) - context.getResources().getDimensionPixelOffset(R.dimen.dp_50)) / 4;
+        imageSize = (ScreenUtils.getScreenWidth() - context.getResources().getDimensionPixelOffset(R.dimen.dp_50)) / 4;
 
         ViewGroup.LayoutParams layoutParams = ivImage.getLayoutParams();
         layoutParams.width = imageSize;

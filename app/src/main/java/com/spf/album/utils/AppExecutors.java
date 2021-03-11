@@ -12,7 +12,7 @@ public class AppExecutors {
     private final Handler mMainHandler;
 
     private AppExecutors() {
-        this.mBackgroundExecutor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+        this.mBackgroundExecutor = Executors.newCachedThreadPool();
         this.mMainHandler = new Handler(Looper.getMainLooper());
     }
 

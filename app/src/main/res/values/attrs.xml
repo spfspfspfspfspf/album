@@ -14,4 +14,11 @@
         <attr name="title" />
     </declare-styleable>
 
+    <declare-styleable name="BottomBarView">
+        <attr name="selected" format="boolean" />
+        <attr name="img_select" format="reference" />
+        <attr name="img_normal" format="reference" />
+        <attr name="txt_content" format="reference" />
+    </declare-styleable>
+
 </resources>

@@ -1,38 +1,32 @@
 package com.spf.album.activity;
 
 import android.Manifest;
-import android.database.Cursor;
-import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
-import android.provider.MediaStore;
 import android.view.View;
+import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
 import androidx.databinding.DataBindingUtil;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentPagerAdapter;
-import androidx.loader.app.LoaderManager;
-import androidx.loader.content.CursorLoader;
-import androidx.loader.content.Loader;
 import androidx.viewpager.widget.ViewPager;
 
+import com.spf.album.ImageFileLoader;
 import com.spf.album.R;
 import com.spf.album.databinding.ActivityMainBinding;
 import com.spf.album.event.LatLntImageClickEvent;
 import com.spf.album.fragment.AlbumFragment;
-import com.spf.album.fragment.LocationFragment;
+import com.spf.album.fragment.GaoDeLocationFragment;
 import com.spf.album.fragment.PhotoFragment;
-import com.spf.album.model.ImageFile;
-import com.spf.album.utils.AppExecutors;
+import com.spf.album.utils.ScreenUtils;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -52,19 +46,20 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
     private ActivityMainBinding binding;
     private PhotoFragment photoFragment;
     private AlbumFragment albumFragment;
-    private LocationFragment locationFragment;
+    private GaoDeLocationFragment locationFragment;
     private int currentTab = TAB_PHOTO;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         binding = DataBindingUtil.setContentView(this, R.layout.activity_main);
+        initStatusBar();
         initFragment(savedInstanceState);
         initBottomBar();
         EventBus.getDefault().register(this);
 
         if (EasyPermissions.hasPermissions(this, permissions)) {
-            LoaderManager.getInstance(this).initLoader(0, null, mLoaderCallback);
+            ImageFileLoader.getInstance().init();
         } else {
             EasyPermissions.requestPermissions(this, "为了正常使用应用，需要读写存储权限", REQUEST_CODE, permissions);
         }
@@ -79,7 +74,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
     @Override
     public void onPermissionsGranted(int requestCode, @NonNull List<String> perms) {
         if (requestCode == REQUEST_CODE) {
-            LoaderManager.getInstance(this).initLoader(0, null, mLoaderCallback);
+            ImageFileLoader.getInstance().init();
         }
     }
 
@@ -90,16 +85,22 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
         }
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.M)
+    private void initStatusBar() {
+        //binding.viewPager.setPadding(0, ScreenUtils.getStatusBarHeight(), 0, 0);
+        getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
+    }
+
     private void initFragment(Bundle bundle) {
         FragmentManager fragmentManager = getSupportFragmentManager();
         if (bundle != null) {
             photoFragment = (PhotoFragment) fragmentManager.getFragment(bundle, KEY_TAB + TAB_PHOTO);
             albumFragment = (AlbumFragment) fragmentManager.getFragment(bundle, KEY_TAB + TAB_ALBUM);
-            locationFragment = (LocationFragment) fragmentManager.getFragment(bundle, KEY_TAB + TAB_LOCATION);
+            locationFragment = (GaoDeLocationFragment) fragmentManager.getFragment(bundle, KEY_TAB + TAB_LOCATION);
         } else {
             photoFragment = new PhotoFragment();
             albumFragment = new AlbumFragment();
-            locationFragment = new LocationFragment();
+            locationFragment = new GaoDeLocationFragment();
         }
 
         List<Fragment> fragments = new ArrayList<>();
@@ -122,20 +123,20 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
     }
 
     private void initBottomBar() {
-        binding.llPhoto.setOnClickListener(this);
-        binding.llAlbum.setOnClickListener(this);
-        binding.llLocation.setOnClickListener(this);
+        binding.barPhoto.setOnClickListener(this);
+        binding.barAlbum.setOnClickListener(this);
+        binding.barLocation.setOnClickListener(this);
     }
 
     @Override
     public void onClick(View v) {
         int tab = -1;
         int id = v.getId();
-        if (id == R.id.ll_photo) {
+        if (id == R.id.bar_photo) {
             tab = TAB_PHOTO;
-        } else if (id == R.id.ll_album) {
+        } else if (id == R.id.bar_album) {
             tab = TAB_ALBUM;
-        } else if (id == R.id.ll_location) {
+        } else if (id == R.id.bar_location) {
             tab = TAB_LOCATION;
         }
         if (currentTab != tab) {
@@ -147,26 +148,17 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
 
     private void setTabBackground() {
         if (currentTab == TAB_PHOTO) {
-            binding.ivPhoto.setImageResource(R.drawable.ic_tab_photo_selected);
-            binding.tvPhoto.setTextColor(getResources().getColor(R.color.tab_text_color_select));
-            binding.ivAlbum.setImageResource(R.drawable.ic_tab_album_normal);
-            binding.tvAlbum.setTextColor(getResources().getColor(R.color.tab_text_color_normal));
-            binding.ivLocation.setImageResource(R.drawable.ic_tab_location_normal);
-            binding.tvLocation.setTextColor(getResources().getColor(R.color.tab_text_color_normal));
+            binding.barPhoto.setSelect(true);
+            binding.barAlbum.setSelect(false);
+            binding.barLocation.setSelect(false);
         } else if (currentTab == TAB_ALBUM) {
-            binding.ivPhoto.setImageResource(R.drawable.ic_tab_photo_normal);
-            binding.tvPhoto.setTextColor(getResources().getColor(R.color.tab_text_color_normal));
-            binding.ivAlbum.setImageResource(R.drawable.ic_tab_album_selected);
-            binding.tvAlbum.setTextColor(getResources().getColor(R.color.tab_text_color_select));
-            binding.ivLocation.setImageResource(R.drawable.ic_tab_location_normal);
-            binding.tvLocation.setTextColor(getResources().getColor(R.color.tab_text_color_normal));
+            binding.barPhoto.setSelect(false);
+            binding.barAlbum.setSelect(true);
+            binding.barLocation.setSelect(false);
         } else if (currentTab == TAB_LOCATION) {
-            binding.ivPhoto.setImageResource(R.drawable.ic_tab_photo_normal);
-            binding.tvPhoto.setTextColor(getResources().getColor(R.color.tab_text_color_normal));
-            binding.ivAlbum.setImageResource(R.drawable.ic_tab_album_normal);
-            binding.tvAlbum.setTextColor(getResources().getColor(R.color.tab_text_color_normal));
-            binding.ivLocation.setImageResource(R.drawable.ic_tab_location_selected);
-            binding.tvLocation.setTextColor(getResources().getColor(R.color.tab_text_color_select));
+            binding.barPhoto.setSelect(false);
+            binding.barAlbum.setSelect(false);
+            binding.barLocation.setSelect(true);
         }
     }
 
@@ -194,56 +186,9 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        ImageFileLoader.getInstance().clear();
         EventBus.getDefault().unregister(this);
     }
-
-    private LoaderManager.LoaderCallbacks<Cursor> mLoaderCallback = new LoaderManager.LoaderCallbacks<Cursor>() {
-        @NonNull
-        @Override
-        public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-            final String SELECTION = "(" + MediaStore.Files.FileColumns.MEDIA_TYPE + "=?"
-                    + " OR "
-                    + MediaStore.Files.FileColumns.MEDIA_TYPE + "=?)"
-                    + " AND " + MediaStore.MediaColumns.SIZE + ">0";
-            final String[] SELECTION_ARGS = {
-                    String.valueOf(MediaStore.Files.FileColumns.MEDIA_TYPE_IMAGE),
-                    String.valueOf(MediaStore.Files.FileColumns.MEDIA_TYPE_VIDEO)};
-            Uri uri = MediaStore.Files.getContentUri("external");
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                uri = MediaStore.setRequireOriginal(uri);
-            }
-            return new CursorLoader(getApplicationContext(), uri, ImageFile.IMAGE_PROJECTION,
-                    SELECTION, SELECTION_ARGS, ImageFile.IMAGE_PROJECTION[3] + " DESC");
-        }
-
-        @Override
-        public void onLoadFinished(@NonNull Loader<Cursor> loader, Cursor data) {
-            if (!isFinishing() && data != null && data.getCount() > 0) {
-                AppExecutors.getInstance().runOnBackground(() -> {
-                    List<ImageFile> allImageFileList = new ArrayList<>();
-                    List<ImageFile> cameraImageFileList = new ArrayList<>();
-                    String cameraPath = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM), "Camera").getAbsolutePath();
-                    data.moveToFirst();
-                    do {
-                        ImageFile imageFile = ImageFile.createImageFile(getApplicationContext(), data);
-                        if (imageFile != null) {
-                            allImageFileList.add(imageFile);
-                            if (imageFile.getPath().contains(cameraPath)) {
-                                cameraImageFileList.add(imageFile);
-                            }
-                        }
-                    } while (data.moveToNext());
-                    photoFragment.setImageFileList(cameraImageFileList);
-                    albumFragment.setImageFileList(allImageFileList);
-                    locationFragment.setImageFileList(cameraImageFileList);
-                });
-            }
-        }
-
-        @Override
-        public void onLoaderReset(@NonNull Loader<Cursor> loader) {
-        }
-    };
 
     static class MainPageAdapter extends FragmentPagerAdapter {
         private List<Fragment> fragments;

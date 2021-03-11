@@ -17,7 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class PhotoListAdapter extends RecyclerView.Adapter {
+public class PhotoListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     private final int TYPE_TITLE = 1;
     private final int TYPE_IMAGE_TWO = 2;
     private final int TYPE_IMAGE_FOUR = 3;

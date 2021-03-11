@@ -2,7 +2,9 @@ package com.spf.album.activity;
 
 import android.content.Context;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,21 +13,24 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.spf.album.ImageFileLoader;
 import com.spf.album.R;
+import com.spf.album.model.FolderInfo;
 import com.spf.album.model.ImageFile;
 import com.spf.album.utils.ImageLoadUtils;
+import com.spf.album.utils.LogUtils;
 import com.spf.album.utils.ScreenUtils;
 import com.spf.album.view.BackTitleBar;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class ImageGridActivity extends BaseActivity {
-    private static final String KEY_TITLE = "key_title";
-    private static final String KEY_IMAGE_FILE = "key_image_file";
+    private static final String TAG = ImageGridActivity.class.getSimpleName();
+    private static final String KEY_PATH = "key_path";
     private BackTitleBar titleBar;
     private RecyclerView recyclerView;
 
@@ -35,8 +40,14 @@ public class ImageGridActivity extends BaseActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_image_grid);
+        initStatusBar();
         initView();
         initData();
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.M)
+    private void initStatusBar() {
+        getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
     }
 
     protected void initView() {
@@ -46,26 +57,61 @@ public class ImageGridActivity extends BaseActivity {
     }
 
     protected void initData() {
-        Intent intent = getIntent();
-        titleBar.setTitle(intent.getStringExtra(KEY_TITLE));
-        recyclerView.setAdapter(new ImageAdapter(this, intent.getParcelableArrayListExtra(KEY_IMAGE_FILE), COLUMN_COUNT));
+        String path = getIntent().getStringExtra(KEY_PATH);
+        if (TextUtils.isEmpty(path)) {
+            finish();
+            return;
+        }
+        FolderInfo folderInfo = null;
+        for (FolderInfo item : ImageFileLoader.getInstance().getFolderList()) {
+            if (path.equals(item.getPath())) {
+                folderInfo = item;
+                break;
+            }
+        }
+        if (folderInfo == null) {
+            finish();
+            return;
+        }
+        titleBar.setTitle(folderInfo.getName());
+        recyclerView.setAdapter(new ImageAdapter(this, folderInfo.getImageFiles(), COLUMN_COUNT));
     }
 
     static class ImageAdapter extends RecyclerView.Adapter<ImageHolder> {
-        private Context context;
-        private List<ImageFile> imageFileList;
-        private int imageSize;
+        private final int TYPE_IMAGE = 1;
+        private final int TYPE_VIDEO = 2;
+        private final Context context;
+        private final List<ImageFile> imageFiles;
+        private final int imageSize;
 
-        ImageAdapter(Context context, List<ImageFile> imageFileList, int columnCount) {
+        ImageAdapter(Context context, List<ImageFile> imageFiles, int columnCount) {
             this.context = context;
-            this.imageFileList = imageFileList;
-            imageSize = (ScreenUtils.getScreenWidth(context) - context.getResources().getDimensionPixelOffset(R.dimen.dp_50)) / columnCount;
+            this.imageFiles = imageFiles;
+            this.imageSize = (ScreenUtils.getScreenWidth()
+                    - context.getResources().getDimensionPixelOffset(R.dimen.dp_50)) / columnCount;
+        }
+
+        @Override
+        public int getItemViewType(int position) {
+            ImageFile imageFile = imageFiles.get(position);
+            if (imageFile.isImage()) {
+                return TYPE_IMAGE;
+            } else if (imageFile.isVideo()) {
+                return TYPE_VIDEO;
+            } else {
+                return TYPE_IMAGE;
+            }
         }
 
         @NonNull
         @Override
         public ImageHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-            ImageHolder imageHolder = new ImageHolder(LayoutInflater.from(context).inflate(R.layout.item_date_image, parent, false));
+            ImageHolder imageHolder;
+            if (viewType == TYPE_VIDEO) {
+                imageHolder = new VideoHolder(LayoutInflater.from(context).inflate(R.layout.item_date_video, parent, false));
+            } else {
+                imageHolder = new ImageHolder(LayoutInflater.from(context).inflate(R.layout.item_date_image, parent, false));
+            }
             ViewGroup.LayoutParams params = imageHolder.ivImage.getLayoutParams();
             params.width = imageSize;
             params.height = imageSize;
@@ -75,46 +121,49 @@ public class ImageGridActivity extends BaseActivity {
 
         @Override
         public void onBindViewHolder(@NonNull ImageHolder holder, int position) {
-            ImageFile imageFile = imageFileList.get(position);
+            LogUtils.d(TAG, "onBindViewHolder: " + position);
+            ImageFile imageFile = imageFiles.get(position);
             ImageLoadUtils.loadImage(new ImageLoadUtils.ImageBuilder(context, imageFile.getUri(), holder.ivImage)
                     .setPlaceHolder(R.drawable.ic_image_placeholder_rect).setSize(imageSize, imageSize));
-            if (imageFile.isVideo()) {
-                holder.ivPlay.setVisibility(View.VISIBLE);
-                holder.tvDuration.setVisibility(View.VISIBLE);
-                holder.tvDuration.setText(imageFile.getDuration());
-            } else {
-                holder.ivPlay.setVisibility(View.GONE);
-                holder.tvDuration.setVisibility(View.GONE);
+            if (imageFile.isVideo() && holder instanceof VideoHolder) {
+                VideoHolder videoHolder = (VideoHolder) holder;
+                videoHolder.tvDuration.setText(imageFile.getDuration());
             }
-            holder.itemView.setOnClickListener(v -> ImagePreviewActivity.start(context, holder.getAdapterPosition(), (ArrayList<ImageFile>) imageFileList));
+            holder.itemView.setOnClickListener(v -> ImagePreviewActivity.start(context, holder.getAdapterPosition(), imageFile.getPath()));
         }
 
         @Override
         public int getItemCount() {
-            return imageFileList == null ? 0 : imageFileList.size();
+            return imageFiles == null ? 0 : imageFiles.size();
         }
     }
 
     static class ImageHolder extends RecyclerView.ViewHolder {
-        private ImageView ivImage;
-        private ImageView ivPlay;
-        private TextView tvDuration;
+        protected ImageView ivImage;
 
         ImageHolder(@NonNull View itemView) {
             super(itemView);
             ivImage = itemView.findViewById(R.id.iv_image);
+        }
+    }
+
+    static class VideoHolder extends ImageHolder {
+        protected ImageView ivPlay;
+        protected TextView tvDuration;
+
+        VideoHolder(@NonNull View itemView) {
+            super(itemView);
             ivPlay = itemView.findViewById(R.id.iv_play);
             tvDuration = itemView.findViewById(R.id.tv_duration);
         }
     }
 
-    public static void start(Context context, String title, ArrayList<ImageFile> imageFileList) {
-        if (imageFileList == null || imageFileList.isEmpty()) {
+    public static void start(Context context, String path) {
+        if (TextUtils.isEmpty(path)) {
             return;
         }
         Intent intent = new Intent(context, ImageGridActivity.class);
-        intent.putExtra(KEY_TITLE, title);
-        intent.putParcelableArrayListExtra(KEY_IMAGE_FILE, imageFileList);
+        intent.putExtra(KEY_PATH, path);
         context.startActivity(intent);
     }
 }

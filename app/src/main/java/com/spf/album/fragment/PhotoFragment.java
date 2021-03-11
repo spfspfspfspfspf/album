@@ -10,12 +10,14 @@ import androidx.annotation.Nullable;
 import androidx.databinding.DataBindingUtil;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
-import com.spf.album.model.ImageFile;
+import com.spf.album.ImageFileLoader;
+import com.spf.album.R;
 import com.spf.album.activity.ImagePreviewActivity;
 import com.spf.album.adapter.PhotoListAdapter;
-import com.spf.album.R;
 import com.spf.album.databinding.FragmentPhotoBinding;
+import com.spf.album.event.ImageFileLoadedEvent;
 import com.spf.album.event.PhotoImageClickEvent;
+import com.spf.album.model.ImageFile;
 import com.spf.album.utils.AppExecutors;
 import com.spf.album.utils.DateUtils;
 
@@ -31,7 +33,6 @@ import java.util.TreeMap;
 public class PhotoFragment extends BaseFragment {
     private FragmentPhotoBinding binding;
     private PhotoListAdapter photoListAdapter;
-    private List<ImageFile> imageFileList;
 
     @Nullable
     @Override
@@ -43,15 +44,21 @@ public class PhotoFragment extends BaseFragment {
     }
 
     @Override
-    public void onStart() {
-        super.onStart();
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
         EventBus.getDefault().register(this);
     }
 
-    public void setImageFileList(List<ImageFile> imageFileList) {
-        this.imageFileList = imageFileList;
+    public void scrollToImage(ImageFile imageFile) {
+        int position = photoListAdapter.getPosition(imageFile);
+        binding.recyclerView.scrollToPosition(position);
+        ((LinearLayoutManager) binding.recyclerView.getLayoutManager()).scrollToPositionWithOffset(position, 0);
+    }
+
+    @Subscribe(threadMode = ThreadMode.BACKGROUND)
+    public void onEventImageFileLoaded(ImageFileLoadedEvent event) {
         SortedMap<String, List<ImageFile>> imageFileMap = new TreeMap<>((o1, o2) -> o2.compareTo(o1));
-        for (ImageFile imageFile : imageFileList) {
+        for (ImageFile imageFile : ImageFileLoader.getInstance().getCameraList()) {
             String date = DateUtils.getDateStr(imageFile.getAddDate() * 1000);
             List<ImageFile> dateImageList = imageFileMap.get(date);
             if (dateImageList == null) {
@@ -63,27 +70,22 @@ public class PhotoFragment extends BaseFragment {
         AppExecutors.getInstance().runOnUI(() -> photoListAdapter.setImageFiles(imageFileMap));
     }
 
-    public void scrollToImage(ImageFile imageFile) {
-        int position = photoListAdapter.getPosition(imageFile);
-        binding.recyclerView.scrollToPosition(position);
-        ((LinearLayoutManager) binding.recyclerView.getLayoutManager()).scrollToPositionWithOffset(position, 0);
-    }
-
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onEventImageClick(PhotoImageClickEvent event) {
         int index = 0;
+        List<ImageFile> imageFileList = ImageFileLoader.getInstance().getCameraList();
         for (int i = 0; i < imageFileList.size(); i++) {
             if (imageFileList.get(i) == event.getImageFile()) {
                 index = i;
                 break;
             }
         }
-        ImagePreviewActivity.start(getContext(), index, (ArrayList<ImageFile>) imageFileList);
+        ImagePreviewActivity.start(getContext(), index, imageFileList.get(0).getPath());
     }
 
     @Override
-    public void onStop() {
-        super.onStop();
+    public void onDestroyView() {
+        super.onDestroyView();
         EventBus.getDefault().unregister(this);
     }
 }

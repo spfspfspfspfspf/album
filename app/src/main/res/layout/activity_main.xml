@@ -2,114 +2,66 @@
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <LinearLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical">
+        android:layout_height="match_parent">
 
         <com.spf.album.view.CustomViewPager
             android:id="@+id/view_pager"
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_weight="1"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toTopOf="@id/v_divider"
             app:scrollEnabled="false" />
 
         <View
             android:id="@+id/v_divider"
             android:layout_width="match_parent"
             android:layout_height="@dimen/dp_1"
-            android:background="@drawable/bg_footer_shadow" />
+            android:background="@drawable/bg_footer_shadow"
+            app:layout_constraintBottom_toTopOf="@id/ll_bottom" />
 
         <LinearLayout
+            android:id="@+id/ll_bottom"
             android:layout_width="match_parent"
             android:layout_height="@dimen/dp_50"
             android:orientation="horizontal"
             android:paddingTop="@dimen/dp_5"
-            android:paddingBottom="@dimen/dp_5">
+            android:paddingBottom="@dimen/dp_5"
+            app:layout_constraintBottom_toBottomOf="parent">
 
-            <LinearLayout
-                android:id="@+id/ll_photo"
+            <com.spf.album.view.BottomBarView
+                android:id="@+id/bar_photo"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
-                android:orientation="vertical">
+                app:img_normal="@drawable/ic_tab_photo_normal"
+                app:img_select="@drawable/ic_tab_photo_selected"
+                app:selected="true"
+                app:txt_content="@string/tab_photo" />
 
-                <ImageView
-                    android:id="@+id/iv_photo"
-                    android:layout_width="@dimen/dp_20"
-                    android:layout_height="@dimen/dp_20"
-                    android:layout_gravity="center_horizontal"
-                    android:scaleType="fitXY"
-                    android:src="@drawable/ic_tab_photo_selected" />
-
-                <TextView
-                    android:id="@+id/tv_photo"
-                    android:layout_width="wrap_content"
-                    android:layout_height="@dimen/dp_20"
-                    android:layout_gravity="center_horizontal"
-                    android:gravity="bottom"
-                    android:includeFontPadding="false"
-                    android:text="@string/tab_photo"
-                    android:textColor="@color/tab_text_color_select"
-                    android:textSize="@dimen/sp_12" />
-            </LinearLayout>
-
-            <LinearLayout
-                android:id="@+id/ll_album"
+            <com.spf.album.view.BottomBarView
+                android:id="@+id/bar_album"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
-                android:orientation="vertical">
+                app:img_normal="@drawable/ic_tab_album_normal"
+                app:img_select="@drawable/ic_tab_album_selected"
+                app:selected="false"
+                app:txt_content="@string/tab_album" />
 
-                <ImageView
-                    android:id="@+id/iv_album"
-                    android:layout_width="@dimen/dp_20"
-                    android:layout_height="@dimen/dp_20"
-                    android:layout_gravity="center_horizontal"
-                    android:scaleType="fitXY"
-                    android:src="@drawable/ic_tab_album_normal" />
-
-                <TextView
-                    android:id="@+id/tv_album"
-                    android:layout_width="wrap_content"
-                    android:layout_height="@dimen/dp_20"
-                    android:layout_gravity="center_horizontal"
-                    android:gravity="bottom"
-                    android:includeFontPadding="false"
-                    android:text="@string/tab_album"
-                    android:textColor="@color/tab_text_color_normal"
-                    android:textSize="@dimen/sp_12" />
-            </LinearLayout>
-
-            <LinearLayout
-                android:id="@+id/ll_location"
+            <com.spf.album.view.BottomBarView
+                android:id="@+id/bar_location"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
-                android:orientation="vertical">
-
-                <ImageView
-                    android:id="@+id/iv_location"
-                    android:layout_width="@dimen/dp_20"
-                    android:layout_height="@dimen/dp_20"
-                    android:layout_gravity="center_horizontal"
-                    android:scaleType="fitXY"
-                    android:src="@drawable/ic_tab_location_normal" />
-
-                <TextView
-                    android:id="@+id/tv_location"
-                    android:layout_width="wrap_content"
-                    android:layout_height="@dimen/dp_20"
-                    android:layout_gravity="center_horizontal"
-                    android:gravity="bottom"
-                    android:includeFontPadding="false"
-                    android:text="@string/tab_location"
-                    android:textColor="@color/tab_text_color_normal"
-                    android:textSize="@dimen/sp_12" />
-            </LinearLayout>
+                app:img_normal="@drawable/ic_tab_location_normal"
+                app:img_select="@drawable/ic_tab_location_selected"
+                app:selected="false"
+                app:txt_content="@string/tab_location" />
 
         </LinearLayout>
 
-    </LinearLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
 </layout>

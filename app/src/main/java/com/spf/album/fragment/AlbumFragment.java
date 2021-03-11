@@ -13,23 +13,23 @@ import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.spf.album.ImageFileLoader;
 import com.spf.album.R;
 import com.spf.album.activity.ImageGridActivity;
+import com.spf.album.event.ImageFileLoadedEvent;
 import com.spf.album.model.FolderInfo;
-import com.spf.album.model.ImageFile;
 import com.spf.album.utils.ImageLoadUtils;
 import com.spf.album.utils.ScreenUtils;
 
-import java.io.File;
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
+
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
 public class AlbumFragment extends BaseFragment {
     private TextImageAdapter adapter;
-    private List<ImageFile> imageFileList;
-    private boolean isFolderMapInit = false;
 
     @Nullable
     @Override
@@ -42,39 +42,20 @@ public class AlbumFragment extends BaseFragment {
     }
 
     @Override
-    public void onResume() {
-        super.onResume();
-        if (!isFolderMapInit) {
-            initFolderMap();
-            isFolderMapInit = true;
-        }
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        EventBus.getDefault().register(this);
     }
 
-    private void initFolderMap() {
-        Map<String, FolderInfo> folderMap = new LinkedHashMap<>();
-        for (ImageFile imageFile : imageFileList) {
-            File parentFile = new File(imageFile.getPath()).getParentFile();
-            String parentPath;
-            String parentName;
-            if (parentFile == null) {
-                parentPath = "/";
-                parentName = "sdcard";
-            } else {
-                parentPath = parentFile.getAbsolutePath();
-                parentName = parentFile.getName();
-            }
-            FolderInfo folderInfo = folderMap.get(parentPath);
-            if (folderInfo == null) {
-                folderInfo = new FolderInfo(parentPath, parentName);
-                folderMap.put(parentPath, folderInfo);
-            }
-            folderInfo.addImageFile(imageFile);
-        }
-        adapter.setFolderList(new ArrayList<>(folderMap.values()));
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onEventImageFileLoaded(ImageFileLoadedEvent event) {
+        adapter.setFolderList(ImageFileLoader.getInstance().getFolderList());
     }
 
-    public void setImageFileList(List<ImageFile> imageFileList) {
-        this.imageFileList = imageFileList;
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        EventBus.getDefault().unregister(this);
     }
 
     static class TextImageAdapter extends RecyclerView.Adapter<TextImageHolder> {
@@ -86,7 +67,7 @@ public class AlbumFragment extends BaseFragment {
         TextImageAdapter(Context context) {
             mContext = context;
             roundCorner = mContext.getResources().getDimensionPixelOffset(R.dimen.dp_5);
-            imageSize = (ScreenUtils.getScreenWidth(mContext) - mContext.getResources().getDimensionPixelOffset(R.dimen.dp_40)) / 3;
+            imageSize = (ScreenUtils.getScreenWidth() - mContext.getResources().getDimensionPixelOffset(R.dimen.dp_40)) / 3;
         }
 
         void setFolderList(List<FolderInfo> folderList) {
@@ -112,7 +93,9 @@ public class AlbumFragment extends BaseFragment {
                     .setSize(imageSize, imageSize));
             holder.tvName.setText(folderInfo.getName());
             holder.tvCount.setText(String.valueOf(folderInfo.getImageFiles().size()));
-            holder.itemView.setOnClickListener(v -> ImageGridActivity.start(mContext, folderInfo.getName(), folderInfo.getImageFiles()));
+            holder.itemView.setOnClickListener(v -> {
+                ImageGridActivity.start(mContext, folderInfo.getPath());
+            });
         }
 
         @Override
