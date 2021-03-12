@@ -35,7 +35,7 @@ public class PhotoItemView extends ConstraintLayout {
     }
 
     private void initView(Context context) {
-        LayoutInflater.from(context).inflate(R.layout.item_date_image, this);
+        LayoutInflater.from(context).inflate(R.layout.item_date_video, this);
 
         ivImage = findViewById(R.id.iv_image);
         ivPlay = findViewById(R.id.iv_play);

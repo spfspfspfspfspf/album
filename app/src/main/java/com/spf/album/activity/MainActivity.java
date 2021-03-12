@@ -4,10 +4,9 @@ import android.Manifest;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
-import android.view.ViewGroup;
+import android.view.WindowManager;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.RequiresApi;
 import androidx.databinding.DataBindingUtil;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
@@ -21,7 +20,6 @@ import com.spf.album.event.LatLntImageClickEvent;
 import com.spf.album.fragment.AlbumFragment;
 import com.spf.album.fragment.GaoDeLocationFragment;
 import com.spf.album.fragment.PhotoFragment;
-import com.spf.album.utils.ScreenUtils;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -52,8 +50,8 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        binding = DataBindingUtil.setContentView(this, R.layout.activity_main);
         initStatusBar();
+        binding = DataBindingUtil.setContentView(this, R.layout.activity_main);
         initFragment(savedInstanceState);
         initBottomBar();
         EventBus.getDefault().register(this);
@@ -85,10 +83,12 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
         }
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.M)
     private void initStatusBar() {
         //binding.viewPager.setPadding(0, ScreenUtils.getStatusBarHeight(), 0, 0);
-        getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
+        getWindow().clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
+        }
     }
 
     private void initFragment(Bundle bundle) {

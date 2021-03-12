@@ -68,6 +68,13 @@ public class PhotoListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
         return i;
     }
 
+    public ImageFile getImageFile(int position) {
+        if (imageDataList.size() > position) {
+            return imageDataList.get(position).get(0);
+        }
+        return null;
+    }
+
     @Override
     public int getItemViewType(int position) {
         List<ImageFile> imageFiles = imageDataList.get(position);
@@ -101,7 +108,7 @@ public class PhotoListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
         List<ImageFile> imageFiles = imageDataList.get(position);
         if (holder instanceof TitleViewHolder) {
-            ((TitleViewHolder) holder).tvTitle.setText(imageFiles.get(0).getName());
+            ((TitleViewHolder) holder).tvTitle.setText(imageFiles.get(0).getDate());
         } else if (holder instanceof ItemViewHolderFour) {
             ItemViewHolderFour itemFour = (ItemViewHolderFour) holder;
             itemFour.itemOne.setImageFile(imageFiles.get(0));

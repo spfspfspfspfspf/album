@@ -6,6 +6,8 @@ import android.os.Parcelable;
 
 import androidx.annotation.Nullable;
 
+import com.spf.album.utils.DateUtils;
+
 public class ImageFile implements Parcelable {
     public static final long ID_TITLE = -101;
 
@@ -13,6 +15,7 @@ public class ImageFile implements Parcelable {
     protected String path;
     protected String name;
     protected long addDate;
+    protected String date;
     protected String mediaType;
     protected long size;
     protected double latitude;
@@ -28,6 +31,7 @@ public class ImageFile implements Parcelable {
         this.path = path;
         this.name = name;
         this.addDate = addDate;
+        this.date = DateUtils.getDateStr(addDate * 1000);
         this.mediaType = mediaType;
         this.size = size;
     }
@@ -37,6 +41,7 @@ public class ImageFile implements Parcelable {
         path = in.readString();
         name = in.readString();
         addDate = in.readLong();
+        date = in.readString();
         mediaType = in.readString();
         size = in.readLong();
         latitude = in.readDouble();
@@ -60,7 +65,7 @@ public class ImageFile implements Parcelable {
     public static ImageFile createImageTitle(String title) {
         ImageFile imageFile = new ImageFile();
         imageFile.id = ID_TITLE;
-        imageFile.name = title;
+        imageFile.date = title;
         return imageFile;
     }
 
@@ -78,6 +83,10 @@ public class ImageFile implements Parcelable {
 
     public long getAddDate() {
         return addDate;
+    }
+
+    public String getDate() {
+        return date;
     }
 
     public long getSize() {
@@ -132,6 +141,7 @@ public class ImageFile implements Parcelable {
         dest.writeString(path);
         dest.writeString(name);
         dest.writeLong(addDate);
+        dest.writeString(date);
         dest.writeString(mediaType);
         dest.writeLong(size);
         dest.writeDouble(latitude);
