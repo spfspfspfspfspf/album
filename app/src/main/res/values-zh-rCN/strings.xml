@@ -8,4 +8,9 @@
     <string name="tab_location">地点</string>
     <string name="all_photo">所有照片</string>
     <string name="default_title">相册</string>
+
+    <string name="tab_mosaic">马赛克</string>
+    <string name="tab_line_mark">线标</string>
+    <string name="tab_word_mark">文标</string>
+    <string name="tab_share">分享</string>
 </resources>

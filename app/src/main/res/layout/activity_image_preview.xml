@@ -1,12 +1,67 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="@android:color/black" >
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <com.spf.album.view.CustomViewPager
-        android:id="@+id/view_pager"
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="match_parent"
+        android:background="@android:color/black">
 
-</FrameLayout>
+        <com.spf.album.view.CustomViewPager
+            android:id="@+id/view_pager"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+
+        <LinearLayout
+            android:id="@+id/ll_bottom"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/dp_50"
+            android:orientation="horizontal"
+            android:visibility="invisible"
+            android:background="#1AFFFFFF"
+            app:layout_constraintBottom_toBottomOf="parent">
+
+            <com.spf.album.view.BottomBarView
+                android:id="@+id/tab_line"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                app:img_normal="@drawable/ic_line_mark_normal"
+                app:img_select="@drawable/ic_line_mark_selected"
+                app:selected="false"
+                app:txt_content="@string/tab_line_mark" />
+
+            <com.spf.album.view.BottomBarView
+                android:id="@+id/tab_word"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                app:img_normal="@drawable/ic_word_mark_normal"
+                app:img_select="@drawable/ic_word_mark_selected"
+                app:selected="false"
+                app:txt_content="@string/tab_word_mark" />
+
+            <com.spf.album.view.BottomBarView
+                android:id="@+id/tab_mosaic"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                app:img_normal="@drawable/ic_mosaic_normal"
+                app:img_select="@drawable/ic_mosaic_selected"
+                app:selected="false"
+                app:txt_content="@string/tab_mosaic" />
+
+            <com.spf.album.view.BottomBarView
+                android:id="@+id/tab_share"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                app:img_normal="@drawable/ic_share_normal"
+                app:img_select="@drawable/ic_share_selected"
+                app:selected="false"
+                app:txt_content="@string/tab_share" />
+
+        </LinearLayout>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</layout>

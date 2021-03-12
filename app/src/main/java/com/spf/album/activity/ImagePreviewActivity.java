@@ -13,6 +13,7 @@ import android.widget.ImageView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.databinding.DataBindingUtil;
 import androidx.viewpager.widget.PagerAdapter;
 import androidx.viewpager.widget.ViewPager;
 
@@ -21,11 +22,11 @@ import com.shuyu.gsyvideoplayer.GSYVideoManager;
 import com.shuyu.gsyvideoplayer.video.StandardGSYVideoPlayer;
 import com.spf.album.ImageFileLoader;
 import com.spf.album.R;
+import com.spf.album.databinding.ActivityImagePreviewBinding;
 import com.spf.album.model.FolderInfo;
 import com.spf.album.model.ImageFile;
 import com.spf.album.utils.ImageLoadUtils;
 import com.spf.album.utils.LogUtils;
-import com.spf.album.view.CustomViewPager;
 
 import java.util.List;
 
@@ -33,14 +34,14 @@ public class ImagePreviewActivity extends BaseActivity {
     private static final String TAG = ImagePreviewActivity.class.getSimpleName();
     private static final String KEY_INDEX = "key_index";
     private static final String KEY_PATH = "key_path";
-    private CustomViewPager viewPager;
-    private boolean statusBarVisible = false;
+    private ActivityImagePreviewBinding binding;
+    private boolean isTopBottomVisible = true;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        binding = DataBindingUtil.setContentView(this, R.layout.activity_image_preview);
         initStatusBar();
-        setContentView(R.layout.activity_image_preview);
         initView();
         initData();
     }
@@ -55,8 +56,7 @@ public class ImagePreviewActivity extends BaseActivity {
     }
 
     protected void initView() {
-        viewPager = findViewById(R.id.view_pager);
-        viewPager.addOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
+        binding.viewPager.addOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
             @Override
             public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
                 LogUtils.d(TAG, "getPlayPosition: " + GSYVideoManager.instance().getPlayPosition());
@@ -84,19 +84,21 @@ public class ImagePreviewActivity extends BaseActivity {
             finish();
             return;
         }
-        viewPager.setAdapter(new ImagePagerAdapter(this, folderInfo.getImageFiles()));
-        viewPager.setCurrentItem(getIntent().getIntExtra(KEY_INDEX, 0));
+        binding.viewPager.setAdapter(new ImagePagerAdapter(this, folderInfo.getImageFiles()));
+        binding.viewPager.setCurrentItem(getIntent().getIntExtra(KEY_INDEX, 0));
     }
 
     private void updateStatusBarVisibility() {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
             return;
         }
-        statusBarVisible = !statusBarVisible;
-        if (statusBarVisible) {
+        isTopBottomVisible = !isTopBottomVisible;
+        if (isTopBottomVisible) {
             getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN);
+            binding.llBottom.setVisibility(View.VISIBLE);
         } else {
             getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_FULLSCREEN);
+            binding.llBottom.setVisibility(View.INVISIBLE);
         }
     }
 
