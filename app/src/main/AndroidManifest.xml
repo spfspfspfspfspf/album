@@ -48,6 +48,9 @@
             android:name=".activity.ImageGridActivity"
             android:screenOrientation="fullSensor" />
 
+        <activity android:name=".activity.EditImageActivity"
+            android:screenOrientation="fullSensor" />
+
     </application>
 
 </manifest>

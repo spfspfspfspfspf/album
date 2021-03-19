@@ -36,6 +36,7 @@ public class ImagePreviewActivity extends BaseActivity {
     private static final String KEY_PATH = "key_path";
     private ActivityImagePreviewBinding binding;
     private boolean isTopBottomVisible = true;
+    private ImagePagerAdapter mImageAdapter;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -65,6 +66,16 @@ public class ImagePreviewActivity extends BaseActivity {
                 }
             }
         });
+        binding.tabEdit.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                ImageFile imageFile = mImageAdapter.getImageFile(binding.viewPager.getCurrentItem());
+                if (imageFile == null) {
+                    return;
+                }
+                EditImageActivity.start(ImagePreviewActivity.this, imageFile.getUri());
+            }
+        });
     }
 
     protected void initData() {
@@ -84,7 +95,8 @@ public class ImagePreviewActivity extends BaseActivity {
             finish();
             return;
         }
-        binding.viewPager.setAdapter(new ImagePagerAdapter(this, folderInfo.getImageFiles()));
+        mImageAdapter = new ImagePagerAdapter(this, folderInfo.getImageFiles());
+        binding.viewPager.setAdapter(mImageAdapter);
         binding.viewPager.setCurrentItem(getIntent().getIntExtra(KEY_INDEX, 0));
     }
 
@@ -137,6 +149,13 @@ public class ImagePreviewActivity extends BaseActivity {
         ImagePagerAdapter(ImagePreviewActivity activity, List<ImageFile> imageFiles) {
             this.activity = activity;
             this.imageFiles = imageFiles;
+        }
+
+        public ImageFile getImageFile(int position) {
+            if (imageFiles == null || imageFiles.isEmpty()) {
+                return null;
+            }
+            return imageFiles.get(position);
         }
 
         @Override

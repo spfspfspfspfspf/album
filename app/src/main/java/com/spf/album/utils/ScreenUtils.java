@@ -22,6 +22,17 @@ public class ScreenUtils {
         return screenWidthPixels;
     }
 
+    public static int getScreenHeight() {
+        if (screenHeightPixels > 0) {
+            return screenHeightPixels;
+        }
+        Resources resources = GalleryApplication.getApplication().getResources();
+        DisplayMetrics displayMetrics = resources.getDisplayMetrics();
+        screenWidthPixels = displayMetrics.widthPixels;
+        screenHeightPixels = displayMetrics.heightPixels;
+        return screenHeightPixels;
+    }
+
     public static float getDensity() {
         DisplayMetrics displayMetrics = GalleryApplication.getApplication().getResources().getDisplayMetrics();
         return displayMetrics.density;

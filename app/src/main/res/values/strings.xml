@@ -9,8 +9,12 @@
     <string name="all_photo">所有照片</string>
     <string name="default_title">相册</string>
 
-    <string name="tab_mosaic">马赛克</string>
-    <string name="tab_line_mark">线标</string>
-    <string name="tab_word_mark">文标</string>
+    <string name="tab_edit">编辑</string>
+    <string name="tab_delete">删除</string>
     <string name="tab_share">分享</string>
+    <string name="tab_mosaic">马赛克</string>
+    <string name="tab_line_mark">划线</string>
+    <string name="tab_word_mark">写字</string>
+    <string name="cancel_edit_draw">撤回</string>
+    <string name="save_edit_draw">保存</string>
 </resources>

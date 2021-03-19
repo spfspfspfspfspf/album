@@ -22,34 +22,24 @@
             app:layout_constraintBottom_toBottomOf="parent">
 
             <com.spf.album.view.BottomBarView
-                android:id="@+id/tab_line"
+                android:id="@+id/tab_edit"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
-                app:img_normal="@drawable/ic_line_mark_normal"
-                app:img_select="@drawable/ic_line_mark_selected"
+                app:img_normal="@drawable/ic_edit_normal"
+                app:img_select="@drawable/ic_edit_selected"
                 app:selected="false"
-                app:txt_content="@string/tab_line_mark" />
+                app:txt_content="@string/tab_edit" />
 
             <com.spf.album.view.BottomBarView
-                android:id="@+id/tab_word"
+                android:id="@+id/tab_delete"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
-                app:img_normal="@drawable/ic_word_mark_normal"
-                app:img_select="@drawable/ic_word_mark_selected"
+                app:img_normal="@drawable/ic_delete_normal"
+                app:img_select="@drawable/ic_delete_selected"
                 app:selected="false"
-                app:txt_content="@string/tab_word_mark" />
-
-            <com.spf.album.view.BottomBarView
-                android:id="@+id/tab_mosaic"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
-                app:img_normal="@drawable/ic_mosaic_normal"
-                app:img_select="@drawable/ic_mosaic_selected"
-                app:selected="false"
-                app:txt_content="@string/tab_mosaic" />
+                app:txt_content="@string/tab_delete" />
 
             <com.spf.album.view.BottomBarView
                 android:id="@+id/tab_share"
