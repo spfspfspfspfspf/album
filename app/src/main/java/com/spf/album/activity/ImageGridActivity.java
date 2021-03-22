@@ -110,9 +110,9 @@ public class ImageGridActivity extends BaseActivity {
         public ImageHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
             ImageHolder imageHolder;
             if (viewType == TYPE_VIDEO) {
-                imageHolder = new VideoHolder(LayoutInflater.from(context).inflate(R.layout.item_date_video, parent, false));
+                imageHolder = new VideoHolder(LayoutInflater.from(context).inflate(R.layout.item_data_video, parent, false));
             } else {
-                imageHolder = new ImageHolder(LayoutInflater.from(context).inflate(R.layout.item_date_image, parent, false));
+                imageHolder = new ImageHolder(LayoutInflater.from(context).inflate(R.layout.item_data_image, parent, false));
             }
             ViewGroup.LayoutParams params = imageHolder.ivImage.getLayoutParams();
             params.width = imageSize;

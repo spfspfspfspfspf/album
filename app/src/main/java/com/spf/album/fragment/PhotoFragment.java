@@ -15,6 +15,7 @@ import com.spf.album.ImageFileLoader;
 import com.spf.album.R;
 import com.spf.album.activity.ImagePreviewActivity;
 import com.spf.album.adapter.PhotoListAdapter;
+import com.spf.album.adapter.PhotoRecyclerAdapter;
 import com.spf.album.databinding.FragmentPhotoBinding;
 import com.spf.album.event.ImageFileLoadedEvent;
 import com.spf.album.event.PhotoImageClickEvent;
@@ -32,7 +33,8 @@ import java.util.TreeMap;
 
 public class PhotoFragment extends BaseFragment {
     private FragmentPhotoBinding binding;
-    private PhotoListAdapter photoListAdapter;
+    //private PhotoListAdapter photoListAdapter;
+    private PhotoRecyclerAdapter photoRecyclerAdapter;
     private LinearLayoutManager linearLayoutManager;
     private String nowTopDate;
 
@@ -41,7 +43,8 @@ public class PhotoFragment extends BaseFragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         binding = DataBindingUtil.inflate(inflater, R.layout.fragment_photo, null, false);
         binding.recyclerView.setLayoutManager(linearLayoutManager = new LinearLayoutManager(mActivity));
-        binding.recyclerView.setAdapter(photoListAdapter = new PhotoListAdapter(mActivity));
+        //binding.recyclerView.setAdapter(photoListAdapter = new PhotoListAdapter(mActivity));
+        binding.recyclerView.setAdapter(photoRecyclerAdapter = new PhotoRecyclerAdapter(mActivity));
         binding.recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
             public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
@@ -51,7 +54,8 @@ public class PhotoFragment extends BaseFragment {
             @Override
             public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
                 int position = linearLayoutManager.findFirstCompletelyVisibleItemPosition();
-                ImageFile imageFile = photoListAdapter.getImageFile(position);
+                //ImageFile imageFile = photoListAdapter.getImageFile(position);
+                ImageFile imageFile = photoRecyclerAdapter.getImageFile(position);
                 if (imageFile == null) {
                     binding.tvTitle.setVisibility(View.INVISIBLE);
                 } else {
@@ -74,7 +78,8 @@ public class PhotoFragment extends BaseFragment {
     }
 
     public void scrollToImage(ImageFile imageFile) {
-        int position = photoListAdapter.getPosition(imageFile);
+        //int position = photoListAdapter.getPosition(imageFile);
+        int position = photoRecyclerAdapter.getPosition(imageFile);
         binding.recyclerView.scrollToPosition(position);
         ((LinearLayoutManager) binding.recyclerView.getLayoutManager()).scrollToPositionWithOffset(position, 0);
     }
@@ -97,7 +102,8 @@ public class PhotoFragment extends BaseFragment {
         AppExecutors.getInstance().runOnUI(() -> {
             nowTopDate = ImageFileLoader.getInstance().getCameraList().get(0).getDate();
             binding.tvTitle.setText(nowTopDate);
-            photoListAdapter.setImageFiles(imageFileMap);
+            //photoListAdapter.setImageFiles(imageFileMap);
+            photoRecyclerAdapter.setImageFiles(imageFileMap);
         });
     }
 
