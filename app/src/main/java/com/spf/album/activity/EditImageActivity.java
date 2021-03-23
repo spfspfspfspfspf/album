@@ -3,6 +3,7 @@ package com.spf.album.activity;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.Rect;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
@@ -57,6 +58,13 @@ public class EditImageActivity extends BaseActivity implements View.OnClickListe
     private void initView() {
         binding.tabLine.setSelect(true);
         binding.img.setMode(DrawImageView.MODE_LINE);
+        binding.tvCancelEdit.addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
+            @Override
+            public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft, int oldTop, int oldRight, int oldBottom) {
+                binding.tvCancelEdit.setRect(new Rect(0, 0,
+                        ScreenUtils.getScreenWidth(), binding.llBottom.getTop()));
+            }
+        });
 
         binding.tabLine.setOnClickListener(this);
         binding.tabWord.setOnClickListener(this);
