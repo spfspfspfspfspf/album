@@ -13,10 +13,10 @@ import android.widget.ImageView;
 import androidx.annotation.Nullable;
 import androidx.databinding.DataBindingUtil;
 
+import com.spf.album.GalleryApplication;
 import com.spf.album.R;
 import com.spf.album.databinding.ActivityEditImageBinding;
 import com.spf.album.event.CloseEditEvent;
-import com.spf.album.utils.AppExecutors;
 import com.spf.album.utils.ImageLoadUtils;
 import com.spf.album.utils.ScreenUtils;
 import com.spf.album.view.DrawImageView;
@@ -25,9 +25,20 @@ import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
+import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
+import io.reactivex.rxjava3.annotations.NonNull;
+import io.reactivex.rxjava3.core.Observable;
+import io.reactivex.rxjava3.core.ObservableEmitter;
+import io.reactivex.rxjava3.core.ObservableOnSubscribe;
+import io.reactivex.rxjava3.disposables.CompositeDisposable;
+import io.reactivex.rxjava3.functions.Consumer;
+import io.reactivex.rxjava3.schedulers.Schedulers;
+
 public class EditImageActivity extends BaseActivity implements View.OnClickListener {
     private static final String KEY_URI = "key_uri";
     private ActivityEditImageBinding binding;
+    private CompositeDisposable disposable;
+    private int bottomHeight;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -41,18 +52,29 @@ public class EditImageActivity extends BaseActivity implements View.OnClickListe
 
     private void initData() {
         Uri uri = getIntent().getParcelableExtra(KEY_URI);
-        AppExecutors.getInstance().runOnBackground(new Runnable() {
+        bottomHeight = GalleryApplication.getApplication().getResources().getDimensionPixelOffset(R.dimen.dp_50);
+        disposable = new CompositeDisposable();
+        disposable.add(Observable.create(new ObservableOnSubscribe<Bitmap>() {
             @Override
-            public void run() {
+            public void subscribe(@NonNull ObservableEmitter<Bitmap> emitter) throws Throwable {
                 Bitmap bitmap = ImageLoadUtils.getBitmap(new ImageLoadUtils.ImageBuilder(EditImageActivity.this, uri)
-                        .setSize(ScreenUtils.getScreenWidth(), ScreenUtils.getScreenHeight() - binding.llBottom.getHeight())
-                        .setScaleType(ImageView.ScaleType.FIT_CENTER));
-                ViewGroup.LayoutParams params = binding.img.getLayoutParams();
-                params.width = bitmap.getWidth();
-                params.height = bitmap.getHeight();
-                binding.img.setImageBitmap(bitmap);
+                        .setSize(ScreenUtils.getScreenWidth(), ScreenUtils.getScreenHeight() - bottomHeight)
+                        .setScaleType(ImageView.ScaleType.CENTER_INSIDE));
+                emitter.onNext(bitmap);
             }
-        });
+        }).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Consumer<Bitmap>() {
+                    @Override
+                    public void accept(Bitmap bitmap) throws Throwable {
+                        ViewGroup.MarginLayoutParams params = (ViewGroup.MarginLayoutParams) binding.img.getLayoutParams();
+                        params.width = bitmap.getWidth();
+                        params.height = bitmap.getHeight();
+                        params.topMargin = (ScreenUtils.getScreenHeight() - bottomHeight - bitmap.getHeight()) / 2;
+                        params.leftMargin = (ScreenUtils.getScreenWidth() - bitmap.getWidth()) / 2;
+                        binding.img.setLayoutParams(params);
+                        binding.img.setImageBitmap(bitmap);
+                    }
+                }));
     }
 
     private void initView() {
@@ -110,6 +132,9 @@ public class EditImageActivity extends BaseActivity implements View.OnClickListe
     @Override
     protected void onDestroy() {
         EventBus.getDefault().unregister(this);
+        if (disposable != null && !disposable.isDisposed()) {
+            disposable.dispose();
+        }
         super.onDestroy();
     }
 

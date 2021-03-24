@@ -1,7 +1,7 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 29
+    compileSdkVersion 30
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
@@ -9,9 +9,9 @@ android {
     }
 
     defaultConfig {
-        applicationId "com.spf.album.temp"
+        applicationId "com.spf.album"
         minSdkVersion 21
-        targetSdkVersion 29
+        targetSdkVersion 30
         versionCode 1
         versionName "1.0"
 
@@ -45,9 +45,13 @@ android {
     }
     applicationVariants.all { variant ->
         variant.outputs.all { output ->
-            outputFileName = 'album_spf' + '-' + variant.name + '-' + variant.versionName + '-' + System.currentTimeMillis() + '.apk'
+            outputFileName = 'album' + '-' + variant.name + '-' + variant.versionName + '-' + currentTime() + '.apk'
         }
     }
+}
+
+def currentTime() {
+    return new Date().format('yyyyMMdd_HHmmss')
 }
 
 dependencies {
@@ -63,7 +67,7 @@ dependencies {
     implementation 'io.reactivex.rxjava3:rxjava:3.0.11'
 
     implementation 'com.github.bumptech.glide:glide:4.12.0'
-    annotationProcessor 'com.github.bumptech.glide:compiler:4.11.0'
+    annotationProcessor 'com.github.bumptech.glide:compiler:4.12.0'
     implementation 'org.greenrobot:eventbus:3.2.0'
     implementation 'com.github.chrisbanes:PhotoView:2.3.0'
 

@@ -114,6 +114,10 @@ public class ImageFile implements Parcelable {
         this.longitude = longitude;
     }
 
+    public boolean isTitle() {
+        return id == ID_TITLE;
+    }
+
     public boolean isImage() {
         return mediaType != null && mediaType.startsWith("image");
     }

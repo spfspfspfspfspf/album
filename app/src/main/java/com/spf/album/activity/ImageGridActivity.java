@@ -46,10 +46,11 @@ public class ImageGridActivity extends BaseActivity {
         initData();
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.M)
     private void initStatusBar() {
         getWindow().clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
-        getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
+        }
     }
 
     protected void initView() {
@@ -131,7 +132,7 @@ public class ImageGridActivity extends BaseActivity {
                 VideoHolder videoHolder = (VideoHolder) holder;
                 videoHolder.tvDuration.setText(imageFile.getDuration());
             }
-            holder.itemView.setOnClickListener(v -> ImagePreviewActivity.start(context, holder.getAdapterPosition(), imageFile.getPath()));
+            holder.itemView.setOnClickListener(v -> ImagePreviewActivity.start(context, imageFile.getPath()));
         }
 
         @Override

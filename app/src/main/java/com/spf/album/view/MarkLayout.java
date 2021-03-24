@@ -15,15 +15,14 @@ import android.view.View;
 import androidx.annotation.Nullable;
 
 import com.spf.album.IScreenLocation;
-import com.spf.album.model.ImageFile;
-import com.spf.album.event.LatLntImageClickEvent;
-import com.spf.album.utils.LogUtils;
 import com.spf.album.R;
+import com.spf.album.event.LatLntImageClickEvent;
+import com.spf.album.model.ImageFile;
+import com.spf.album.utils.LogUtils;
 
 import org.greenrobot.eventbus.EventBus;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 public class MarkLayout extends View {
@@ -76,7 +75,7 @@ public class MarkLayout extends View {
 
     public void setMarks(Map<ImageFile, MarkInfo> marks) {
         mMarkMap.clear();
-        if(marks != null && marks.size() > 0) {
+        if (marks != null && marks.size() > 0) {
             mMarkMap.putAll(marks);
         }
         invalidate();
@@ -87,7 +86,7 @@ public class MarkLayout extends View {
         int x = (int) event.getX();
         int y = (int) event.getY();
         int action = event.getAction();
-        if(action == MotionEvent.ACTION_DOWN) {
+        if (action == MotionEvent.ACTION_DOWN) {
             for (Map.Entry<ImageFile, MarkInfo> entry : mMarkMap.entrySet()) {
                 if (entry.getValue().area.contains(x, y)) {
                     return true;

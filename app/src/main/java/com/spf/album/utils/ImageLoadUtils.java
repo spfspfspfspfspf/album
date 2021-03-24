@@ -150,12 +150,10 @@ public class ImageLoadUtils {
                 requestBuilder = requestBuilder.placeholder(imageBuilder.placeHolder);
             }
 
-            // TODO: 2021/3/17 DrawImageView 获取 Bitmap 时用 transform() 方法无效
-            requestBuilder = requestBuilder.fitCenter();
-//            Transformation<Bitmap>[] transformations = getTransformations(imageBuilder);
-//            if (transformations != null) {
-//                requestBuilder = requestBuilder.transform(transformations);
-//            }
+            Transformation<Bitmap>[] transformations = getTransformations(imageBuilder);
+            if (transformations != null) {
+                requestBuilder = requestBuilder.transform(transformations);
+            }
 
             if (imageBuilder.width > 0 && imageBuilder.height > 0) {
                 requestBuilder = requestBuilder.override(imageBuilder.width, imageBuilder.height);

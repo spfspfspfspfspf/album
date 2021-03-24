@@ -14,7 +14,7 @@ public class MyGlideModule extends AppGlideModule {
 
     @Override
     public void applyOptions(@NonNull Context context, @NonNull GlideBuilder builder) {
-        //builder.setMemoryCache(new LruResourceCache(1024 * 1024 * 30));  //30MB
+        builder.setMemoryCache(new LruResourceCache(1024 * 1024 * 60));  //60MB
     }
 
 }

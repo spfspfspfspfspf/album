@@ -32,7 +32,6 @@ import java.util.List;
 
 public class ImagePreviewActivity extends BaseActivity {
     private static final String TAG = ImagePreviewActivity.class.getSimpleName();
-    private static final String KEY_INDEX = "key_index";
     private static final String KEY_PATH = "key_path";
     private ActivityImagePreviewBinding binding;
     private boolean isTopBottomVisible = true;
@@ -91,13 +90,20 @@ public class ImagePreviewActivity extends BaseActivity {
                 break;
             }
         }
-        if (folderInfo == null) {
+        if (folderInfo == null || folderInfo.getImageFiles().isEmpty()) {
             finish();
             return;
         }
-        mImageAdapter = new ImagePagerAdapter(this, folderInfo.getImageFiles());
+        List<ImageFile> imageFiles = folderInfo.getImageFiles();
+        int index = imageFiles.size() - 1;
+        for (; index >= 0; index--) {
+            if (path.equals(imageFiles.get(index).getPath())) {
+                break;
+            }
+        }
+        mImageAdapter = new ImagePagerAdapter(this, imageFiles);
         binding.viewPager.setAdapter(mImageAdapter);
-        binding.viewPager.setCurrentItem(getIntent().getIntExtra(KEY_INDEX, 0));
+        binding.viewPager.setCurrentItem(index);
     }
 
     private void updateStatusBarVisibility() {
@@ -132,12 +138,11 @@ public class ImagePreviewActivity extends BaseActivity {
         GSYVideoManager.releaseAllVideos();
     }
 
-    public static void start(Context context, int index, String path) {
+    public static void start(Context context, String path) {
         if (TextUtils.isEmpty(path)) {
             return;
         }
         Intent intent = new Intent(context, ImagePreviewActivity.class);
-        intent.putExtra(KEY_INDEX, index);
         intent.putExtra(KEY_PATH, path);
         context.startActivity(intent);
     }

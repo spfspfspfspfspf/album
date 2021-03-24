@@ -1,6 +1,5 @@
 package com.spf.album.utils;
 
-import android.content.Context;
 import android.content.res.Resources;
 import android.util.DisplayMetrics;
 

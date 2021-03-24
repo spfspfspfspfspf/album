@@ -8,14 +8,14 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.databinding.DataBindingUtil;
+import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.spf.album.ImageFileLoader;
 import com.spf.album.R;
 import com.spf.album.activity.ImagePreviewActivity;
-import com.spf.album.adapter.PhotoListAdapter;
-import com.spf.album.adapter.PhotoRecyclerAdapter;
+import com.spf.album.adapter.PhotoGridAdapter;
 import com.spf.album.databinding.FragmentPhotoBinding;
 import com.spf.album.event.ImageFileLoadedEvent;
 import com.spf.album.event.PhotoImageClickEvent;
@@ -34,28 +34,30 @@ import java.util.TreeMap;
 public class PhotoFragment extends BaseFragment {
     private FragmentPhotoBinding binding;
     //private PhotoListAdapter photoListAdapter;
-    private PhotoRecyclerAdapter photoRecyclerAdapter;
-    private LinearLayoutManager linearLayoutManager;
+    //private PhotoRecyclerAdapter photoRecyclerAdapter;
+    private PhotoGridAdapter photoGridAdapter;
+    private GridLayoutManager layoutManager;
     private String nowTopDate;
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         binding = DataBindingUtil.inflate(inflater, R.layout.fragment_photo, null, false);
-        binding.recyclerView.setLayoutManager(linearLayoutManager = new LinearLayoutManager(mActivity));
-        //binding.recyclerView.setAdapter(photoListAdapter = new PhotoListAdapter(mActivity));
-        binding.recyclerView.setAdapter(photoRecyclerAdapter = new PhotoRecyclerAdapter(mActivity));
+        photoGridAdapter = new PhotoGridAdapter(mActivity);
+        layoutManager = new GridLayoutManager(mActivity, PhotoGridAdapter.COLUMN_COUNT);
+        layoutManager.setSpanSizeLookup(new GridLayoutManager.SpanSizeLookup() {
+            @Override
+            public int getSpanSize(int position) {
+                return photoGridAdapter.getSpanSize(position);
+            }
+        });
+        binding.recyclerView.setLayoutManager(layoutManager);
+        binding.recyclerView.setAdapter(photoGridAdapter);
         binding.recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
-            public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
-                super.onScrollStateChanged(recyclerView, newState);
-            }
-
-            @Override
             public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
-                int position = linearLayoutManager.findFirstCompletelyVisibleItemPosition();
-                //ImageFile imageFile = photoListAdapter.getImageFile(position);
-                ImageFile imageFile = photoRecyclerAdapter.getImageFile(position);
+                int position = layoutManager.findFirstVisibleItemPosition();
+                ImageFile imageFile = photoGridAdapter.getImageFile(position);
                 if (imageFile == null) {
                     binding.tvTitle.setVisibility(View.INVISIBLE);
                 } else {
@@ -78,8 +80,7 @@ public class PhotoFragment extends BaseFragment {
     }
 
     public void scrollToImage(ImageFile imageFile) {
-        //int position = photoListAdapter.getPosition(imageFile);
-        int position = photoRecyclerAdapter.getPosition(imageFile);
+        int position = photoGridAdapter.getPosition(imageFile);
         binding.recyclerView.scrollToPosition(position);
         ((LinearLayoutManager) binding.recyclerView.getLayoutManager()).scrollToPositionWithOffset(position, 0);
     }
@@ -103,7 +104,8 @@ public class PhotoFragment extends BaseFragment {
             nowTopDate = ImageFileLoader.getInstance().getCameraList().get(0).getDate();
             binding.tvTitle.setText(nowTopDate);
             //photoListAdapter.setImageFiles(imageFileMap);
-            photoRecyclerAdapter.setImageFiles(imageFileMap);
+            //photoRecyclerAdapter.setImageFiles(imageFileMap);
+            photoGridAdapter.setImageFiles(imageFileMap);
         });
     }
 
@@ -117,7 +119,7 @@ public class PhotoFragment extends BaseFragment {
                 break;
             }
         }
-        ImagePreviewActivity.start(getContext(), index, imageFileList.get(0).getPath());
+        ImagePreviewActivity.start(getContext(), imageFileList.get(0).getPath());
     }
 
     @Override
