@@ -7,15 +7,9 @@ import android.view.MotionEvent;
 
 import androidx.appcompat.widget.AppCompatTextView;
 
-import com.spf.album.utils.LogUtils;
 import com.spf.album.utils.ScreenUtils;
 
-import java.util.Locale;
-
 public class DragTextView extends AppCompatTextView {
-    private int width;
-    private int height;
-
     //是否拖动
     private boolean isDrag = false;
     private float downX;
@@ -50,13 +44,6 @@ public class DragTextView extends AppCompatTextView {
     }
 
     @Override
-    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
-        width = getMeasuredWidth();
-        height = getMeasuredHeight();
-    }
-
-    @Override
     public boolean onTouchEvent(MotionEvent event) {
         super.onTouchEvent(event);
         if (this.isEnabled()) {
@@ -80,8 +67,6 @@ public class DragTextView extends AppCompatTextView {
                         b = t + getHeight();
                         //不划出边界判断,此处应按照项目实际情况,因为本项目需求移动的位置是手机全屏,
                         // 所以才能这么写,如果是固定区域,要得到父控件的宽高位置后再做处理
-                        LogUtils.d("spf", String.format(Locale.CHINA, "111 - l: %d, r: %d, t: %d, b: %d",
-                                l, r, t, b));
                         if (l < rect.left) {
                             l = rect.left;
                             r = l + getWidth();
@@ -96,8 +81,6 @@ public class DragTextView extends AppCompatTextView {
                             b = rect.bottom;
                             t = b - getHeight();
                         }
-                        LogUtils.d("spf", String.format(Locale.CHINA, "222 - l: %d, r: %d, t: %d, b: %d",
-                                l, r, t, b));
                         this.layout(l, t, r, b);
                     }
                     break;

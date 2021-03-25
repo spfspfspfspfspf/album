@@ -2,7 +2,6 @@ package com.spf.album.fragment;
 
 import android.graphics.Point;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -67,7 +66,6 @@ public class GaoDeLocationFragment extends BaseFragment implements IScreenLocati
         mMap.setOnCameraChangeListener(new AMap.OnCameraChangeListener() {
             @Override
             public void onCameraChange(CameraPosition cameraPosition) {
-                Log.d(TAG, "onCameraChange");
                 if (isFileListInit && isImageBitmapInit) {
                     markLayout.updateMarks();
                 }

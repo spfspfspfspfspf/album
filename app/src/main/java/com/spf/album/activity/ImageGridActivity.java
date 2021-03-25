@@ -14,7 +14,6 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.annotation.RequiresApi;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -23,7 +22,6 @@ import com.spf.album.R;
 import com.spf.album.model.FolderInfo;
 import com.spf.album.model.ImageFile;
 import com.spf.album.utils.ImageLoadUtils;
-import com.spf.album.utils.LogUtils;
 import com.spf.album.utils.ScreenUtils;
 import com.spf.album.view.BackTitleBar;
 
@@ -124,7 +122,6 @@ public class ImageGridActivity extends BaseActivity {
 
         @Override
         public void onBindViewHolder(@NonNull ImageHolder holder, int position) {
-            LogUtils.d(TAG, "onBindViewHolder: " + position);
             ImageFile imageFile = imageFiles.get(position);
             ImageLoadUtils.loadImage(new ImageLoadUtils.ImageBuilder(context, imageFile.getUri(), holder.ivImage)
                     .setPlaceHolder(R.drawable.ic_image_placeholder_rect).setSize(imageSize, imageSize));
