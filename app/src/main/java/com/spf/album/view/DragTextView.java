@@ -68,7 +68,6 @@ public class DragTextView extends AppCompatTextView {
                     checkRect();
                     break;
                 case MotionEvent.ACTION_MOVE:
-                    LogUtils.d("spf", "rect: " + rect);
                     final float xDistance = event.getX() - downX;
                     final float yDistance = event.getY() - downY;
                     int l, r, t, b;

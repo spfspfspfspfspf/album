@@ -3,6 +3,7 @@
 
     <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:id="@+id/cl_root"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="@android:color/black">
@@ -74,9 +75,9 @@
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
+                android:visibility="gone"
                 app:img_normal="@drawable/ic_mosaic_normal"
                 app:img_select="@drawable/ic_mosaic_selected"
-                android:visibility="gone"
                 app:selected="false"
                 app:txt_content="@string/tab_mosaic" />
 

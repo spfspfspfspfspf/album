@@ -150,9 +150,19 @@ public class ImageLoadUtils {
                 requestBuilder = requestBuilder.placeholder(imageBuilder.placeHolder);
             }
 
-            Transformation<Bitmap>[] transformations = getTransformations(imageBuilder);
-            if (transformations != null) {
-                requestBuilder = requestBuilder.transform(transformations);
+            if (imageBuilder.roundCorner < 1) {
+                if (imageBuilder.scaleType == ImageView.ScaleType.CENTER_CROP) {
+                    requestBuilder = requestBuilder.centerCrop();
+                } else if (imageBuilder.scaleType == ImageView.ScaleType.CENTER_INSIDE) {
+                    requestBuilder = requestBuilder.centerInside();
+                } else if (imageBuilder.scaleType == ImageView.ScaleType.FIT_CENTER) {
+                    requestBuilder = requestBuilder.fitCenter();
+                }
+            } else {
+                Transformation<Bitmap>[] transformations = getTransformations(imageBuilder);
+                if (transformations != null) {
+                    requestBuilder = requestBuilder.transform(transformations);
+                }
             }
 
             if (imageBuilder.width > 0 && imageBuilder.height > 0) {

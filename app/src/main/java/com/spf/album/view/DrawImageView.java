@@ -6,6 +6,7 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
+import android.graphics.Rect;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
@@ -21,15 +22,20 @@ import java.util.List;
 
 public class DrawImageView extends View {
     private static final String TAG = DrawImageView.class.getSimpleName();
+    public static final int MODE_NONE = 0;
     public static final int MODE_LINE = 1;
     public static final int MODE_WORD = 2;
     public static final int MODE_MOSAIC = 3;
     private Bitmap mSourceBitmap;
 
-    private int mode;
+    private int mode = MODE_NONE;
     private Paint mLinePaint;
     private Path mLinePath;
-    private List<Path> mLinePathList;
+    private Word mClickWord;
+    private float mLastTouchX, mLastTouchY;
+    private final List<Path> mLinePathList = new ArrayList<>();
+    private final List<Word> mWordList = new ArrayList<>();
+    private final List<Integer> mTraceList = new ArrayList<>();
 
     public DrawImageView(@NonNull Context context) {
         this(context, null);
@@ -52,7 +58,6 @@ public class DrawImageView extends View {
         mLinePaint.setStrokeWidth(ScreenUtils.dp2px(3));
         mLinePaint.setStrokeCap(Paint.Cap.ROUND);
         mLinePaint.setStrokeJoin(Paint.Join.ROUND);
-        mLinePathList = new ArrayList<>();
     }
 
     public void setMode(int mode) {
@@ -64,11 +69,25 @@ public class DrawImageView extends View {
         postInvalidate();
     }
 
+    public void addWord(String content, int color) {
+        Word word = new Word(content, color);
+        int width = word.rect.width();
+        int height = word.rect.height();
+        int left = (getWidth() - width) / 2;
+        int top = (getHeight() - height) / 2;
+        word.rect.set(left, top, left + width, top + height);
+        mWordList.add(word);
+        mTraceList.add(MODE_WORD);
+        invalidate();
+    }
+
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
-                onTouchDown(event.getX(), event.getY());
+                mLastTouchX = event.getX();
+                mLastTouchY = event.getY();
+                onTouchDown(mLastTouchX, mLastTouchY);
                 break;
             case MotionEvent.ACTION_MOVE:
                 onTouchMove(event.getX(), event.getY());
@@ -80,10 +99,12 @@ public class DrawImageView extends View {
         }
         invalidate();
         return true;
-        //return super.onTouchEvent(event);
     }
 
     private void onTouchDown(float x, float y) {
+        if (isClickWord(x, y)) {
+            return;
+        }
         switch (mode) {
             case MODE_LINE:
                 mLinePath = new Path();
@@ -93,6 +114,20 @@ public class DrawImageView extends View {
     }
 
     private void onTouchMove(float x, float y) {
+        if (mClickWord != null) {
+            int xDistance = (int) (x - mLastTouchX);
+            int yDistance = (int) (y - mLastTouchY);
+            int left = mClickWord.rect.left + xDistance;
+            int right = mClickWord.rect.right + xDistance;
+            int top = mClickWord.rect.top + yDistance;
+            int bottom = mClickWord.rect.bottom + yDistance;
+            if (left > 5 && right < getWidth() - 5 && top > 5 && bottom < getHeight() - 5) {
+                mClickWord.rect.set(left, top, right, bottom);
+            }
+            mLastTouchX = x;
+            mLastTouchY = y;
+            return;
+        }
         switch (mode) {
             case MODE_LINE:
                 mLinePath.lineTo(x, y);
@@ -101,12 +136,32 @@ public class DrawImageView extends View {
     }
 
     private void onTouchEnd() {
+        if (mClickWord != null) {
+            return;
+        }
         switch (mode) {
             case MODE_LINE:
                 mLinePathList.add(mLinePath);
+                mTraceList.add(MODE_LINE);
                 mLinePath = null;
                 break;
         }
+    }
+
+    private boolean isClickWord(float x, float y) {
+        mClickWord = null;
+        if (mWordList.isEmpty()) {
+            return false;
+        }
+        int intX = (int) x;
+        int intY = (int) y;
+        for (Word word : mWordList) {
+            if (word.rect.contains(intX, intY)) {
+                mClickWord = word;
+                return true;
+            }
+        }
+        return false;
     }
 
     private void drawLine(Canvas canvas) {
@@ -118,16 +173,32 @@ public class DrawImageView extends View {
         }
     }
 
+    private void drawWords(Canvas canvas) {
+        for (Word word : mWordList) {
+            canvas.drawText(word.content, word.rect.left, word.rect.bottom, word.paint);
+        }
+    }
+
     public void cancelEdit() {
+        if (mTraceList.isEmpty()) {
+            return;
+        }
+        int mode = mTraceList.remove(mTraceList.size() - 1);
         switch (mode) {
             case MODE_LINE:
                 if (mLinePathList.isEmpty()) {
                     return;
                 }
                 mLinePathList.remove(mLinePathList.size() - 1);
-                invalidate();
+                break;
+            case MODE_WORD:
+                if (mWordList.isEmpty()) {
+                    return;
+                }
+                mWordList.remove(mWordList.size() - 1);
                 break;
         }
+        invalidate();
     }
 
     public void saveImage() {
@@ -142,10 +213,23 @@ public class DrawImageView extends View {
             return;
         }
         canvas.drawBitmap(mSourceBitmap, 0, 0, null);
-        switch (mode) {
-            case MODE_LINE:
-                drawLine(canvas);
-                break;
+        drawLine(canvas);
+        drawWords(canvas);
+    }
+
+    static class Word {
+        Paint paint;
+        String content;
+        Rect rect = new Rect();
+
+        public Word(String content, int color) {
+            this.content = content;
+            this.paint = new Paint();
+            this.paint.setTextSize(ScreenUtils.dp2px(20));
+            //this.paint.setAntiAlias(true);
+            this.paint.setColor(color);
+            //this.paint.setStyle(Paint.Style.STROKE);
+            this.paint.getTextBounds(content, 0, content.length(), rect);
         }
     }
 }

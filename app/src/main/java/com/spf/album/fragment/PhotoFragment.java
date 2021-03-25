@@ -14,11 +14,9 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.spf.album.ImageFileLoader;
 import com.spf.album.R;
-import com.spf.album.activity.ImagePreviewActivity;
 import com.spf.album.adapter.PhotoGridAdapter;
 import com.spf.album.databinding.FragmentPhotoBinding;
 import com.spf.album.event.ImageFileLoadedEvent;
-import com.spf.album.event.PhotoImageClickEvent;
 import com.spf.album.model.ImageFile;
 import com.spf.album.utils.AppExecutors;
 
@@ -33,8 +31,6 @@ import java.util.TreeMap;
 
 public class PhotoFragment extends BaseFragment {
     private FragmentPhotoBinding binding;
-    //private PhotoListAdapter photoListAdapter;
-    //private PhotoRecyclerAdapter photoRecyclerAdapter;
     private PhotoGridAdapter photoGridAdapter;
     private GridLayoutManager layoutManager;
     private String nowTopDate;
@@ -103,23 +99,8 @@ public class PhotoFragment extends BaseFragment {
         AppExecutors.getInstance().runOnUI(() -> {
             nowTopDate = ImageFileLoader.getInstance().getCameraList().get(0).getDate();
             binding.tvTitle.setText(nowTopDate);
-            //photoListAdapter.setImageFiles(imageFileMap);
-            //photoRecyclerAdapter.setImageFiles(imageFileMap);
             photoGridAdapter.setImageFiles(imageFileMap);
         });
-    }
-
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onEventImageClick(PhotoImageClickEvent event) {
-        int index = 0;
-        List<ImageFile> imageFileList = ImageFileLoader.getInstance().getCameraList();
-        for (int i = 0; i < imageFileList.size(); i++) {
-            if (imageFileList.get(i) == event.getImageFile()) {
-                index = i;
-                break;
-            }
-        }
-        ImagePreviewActivity.start(getContext(), imageFileList.get(0).getPath());
     }
 
     @Override

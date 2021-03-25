@@ -6,6 +6,7 @@ import android.graphics.Bitmap;
 import android.graphics.Rect;
 import android.net.Uri;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
@@ -17,6 +18,8 @@ import com.spf.album.GalleryApplication;
 import com.spf.album.R;
 import com.spf.album.databinding.ActivityEditImageBinding;
 import com.spf.album.event.CloseEditEvent;
+import com.spf.album.event.WordMarkEvent;
+import com.spf.album.utils.DialogUtils;
 import com.spf.album.utils.ImageLoadUtils;
 import com.spf.album.utils.ScreenUtils;
 import com.spf.album.view.DrawImageView;
@@ -59,7 +62,7 @@ public class EditImageActivity extends BaseActivity implements View.OnClickListe
             public void subscribe(@NonNull ObservableEmitter<Bitmap> emitter) throws Throwable {
                 Bitmap bitmap = ImageLoadUtils.getBitmap(new ImageLoadUtils.ImageBuilder(EditImageActivity.this, uri)
                         .setSize(ScreenUtils.getScreenWidth(), ScreenUtils.getScreenHeight() - bottomHeight)
-                        .setScaleType(ImageView.ScaleType.CENTER_INSIDE));
+                        .setScaleType(ImageView.ScaleType.FIT_CENTER));
                 emitter.onNext(bitmap);
             }
         }).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
@@ -78,8 +81,6 @@ public class EditImageActivity extends BaseActivity implements View.OnClickListe
     }
 
     private void initView() {
-        binding.tabLine.setSelect(true);
-        binding.img.setMode(DrawImageView.MODE_LINE);
         binding.tvCancelEdit.addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
             @Override
             public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft, int oldTop, int oldRight, int oldBottom) {
@@ -108,6 +109,7 @@ public class EditImageActivity extends BaseActivity implements View.OnClickListe
             binding.tabLine.setSelect(false);
             binding.tabWord.setSelect(true);
             binding.tabMosaic.setSelect(false);
+            DialogUtils.showWordMarkDialog(this);
         } else if (R.id.tab_mosaic == id) {
             binding.img.setMode(DrawImageView.MODE_MOSAIC);
             binding.tabLine.setSelect(false);
@@ -127,6 +129,16 @@ public class EditImageActivity extends BaseActivity implements View.OnClickListe
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onEventCloseEdit(CloseEditEvent event) {
         finish();
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onEventWordMark(WordMarkEvent event) {
+        binding.img.setMode(DrawImageView.MODE_NONE);
+        binding.tabWord.setSelect(false);
+        if (TextUtils.isEmpty(event.getContent())) {
+            return;
+        }
+        binding.img.addWord(event.getContent(), event.getColor());
     }
 
     @Override
