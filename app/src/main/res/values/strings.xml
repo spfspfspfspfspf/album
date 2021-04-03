@@ -23,4 +23,7 @@
     <string name="input_content">请输入内容</string>
     <string name="confirm">确定</string>
     <string name="cancel">取消</string>
+
+    <string name="image_save_success">图片保存成功：%s</string>
+    <string name="image_save_fail">图片保存失败</string>
 </resources>

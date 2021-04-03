@@ -94,6 +94,41 @@ public class ImageFileLoader {
 //                });
     }
 
+    public void update() {
+        isCanceled = false;
+        AppExecutors.getInstance().runOnBackground(new Runnable() {
+            @Override
+            public void run() {
+                Cursor cursor = query();
+                if (isCanceled || cursor == null) {
+                    return;
+                }
+                try {
+                    if (cursor.getCount() < 1) {
+                        return;
+                    }
+                    mAllList.clear();
+                    mCameraList.clear();
+                    mFolderList.clear();
+                    cursor.moveToFirst();
+                    do {
+                        ImageFile imageFile = createImageFile(cursor);
+                        if (imageFile == null) {
+                            continue;
+                        }
+                        mAllList.add(imageFile);
+                        if (imageFile.getPath().contains(CAMERA_PATH)) {
+                            mCameraList.add(imageFile);
+                        }
+                    } while (cursor.moveToNext());
+                } finally {
+                    cursor.close();
+                }
+                EventBus.getDefault().post(new ImageFileLoadedEvent());
+            }
+        });
+    }
+
     private Cursor query() {
         final String SELECTION = "(" + MediaStore.Files.FileColumns.MEDIA_TYPE + "=?"
                 + " OR "
@@ -113,6 +148,7 @@ public class ImageFileLoader {
     private void initData(Cursor cursor) {
         mAllList.clear();
         mCameraList.clear();
+        mFolderList.clear();
         if (cursor == null) {
             return;
         }

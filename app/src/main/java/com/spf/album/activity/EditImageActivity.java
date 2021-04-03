@@ -10,6 +10,7 @@ import android.text.TextUtils;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.databinding.DataBindingUtil;
@@ -27,6 +28,8 @@ import com.spf.album.view.DrawImageView;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
+
+import java.io.File;
 
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import io.reactivex.rxjava3.annotations.NonNull;
@@ -121,9 +124,31 @@ public class EditImageActivity extends BaseActivity implements View.OnClickListe
             }
         } else if (R.id.tv_save_edit == id) {
             if (!binding.tvSaveEdit.isDrag()) {
-                binding.img.saveImage();
+                saveImage();
             }
         }
+    }
+
+    public void saveImage() {
+        Observable.create(new ObservableOnSubscribe<File>() {
+            @Override
+            public void subscribe(@androidx.annotation.NonNull ObservableEmitter<File> emitter) throws Throwable {
+                emitter.onNext(ImageLoadUtils.saveToGallery(binding.img));
+            }
+        }).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Consumer<File>() {
+                    @Override
+                    public void accept(File file) throws Throwable {
+                        Context context = GalleryApplication.getApplication();
+                        if (file == null) {
+                            Toast.makeText(context, R.string.image_save_fail, Toast.LENGTH_SHORT).show();
+                        } else {
+                            Toast.makeText(context, context.getResources().getString(
+                                    R.string.image_save_success, file.getAbsolutePath()), Toast.LENGTH_SHORT).show();
+                            finish();
+                        }
+                    }
+                });
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)

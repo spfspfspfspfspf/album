@@ -201,10 +201,6 @@ public class DrawImageView extends View {
         invalidate();
     }
 
-    public void saveImage() {
-
-    }
-
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
