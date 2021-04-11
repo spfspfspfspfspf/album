@@ -11,16 +11,20 @@
         <com.spf.album.view.DrawImageView
             android:id="@+id/img"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            android:layout_height="match_parent"
+            android:layout_marginTop="@dimen/dp_50"
+            android:layout_marginBottom="@dimen/dp_50"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"/>
 
         <com.spf.album.view.DragTextView
             android:id="@+id/tv_save_edit"
             android:layout_width="@dimen/dp_50"
             android:layout_height="@dimen/dp_30"
             android:layout_marginStart="@dimen/dp_10"
-            android:layout_marginTop="@dimen/dp_10"
+            android:layout_marginTop="@dimen/dp_50"
             android:background="#2AFFFFFF"
             android:gravity="center"
             android:text="@string/save_edit_draw"
@@ -32,7 +36,7 @@
             android:id="@+id/tv_cancel_edit"
             android:layout_width="@dimen/dp_50"
             android:layout_height="@dimen/dp_30"
-            android:layout_marginTop="@dimen/dp_10"
+            android:layout_marginTop="@dimen/dp_50"
             android:layout_marginEnd="@dimen/dp_10"
             android:background="#2AFFFFFF"
             android:gravity="center"

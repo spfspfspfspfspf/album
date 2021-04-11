@@ -9,7 +9,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.databinding.DataBindingUtil;
 import androidx.recyclerview.widget.GridLayoutManager;
-import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.spf.album.ImageFileLoader;
@@ -77,8 +76,9 @@ public class PhotoFragment extends BaseFragment {
 
     public void scrollToImage(ImageFile imageFile) {
         int position = photoGridAdapter.getPosition(imageFile);
-        binding.recyclerView.scrollToPosition(position);
-        ((LinearLayoutManager) binding.recyclerView.getLayoutManager()).scrollToPositionWithOffset(position, 0);
+        //binding.recyclerView.scrollToPosition(position);
+        ((GridLayoutManager) binding.recyclerView.getLayoutManager())
+                .scrollToPositionWithOffset(position, binding.tvTitle.getHeight());
     }
 
     @Subscribe(threadMode = ThreadMode.BACKGROUND)

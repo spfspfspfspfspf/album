@@ -5,10 +5,12 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Rect;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.Toast;
 
@@ -49,11 +51,19 @@ public class EditImageActivity extends BaseActivity implements View.OnClickListe
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_FULLSCREEN);
         binding = DataBindingUtil.setContentView(this, R.layout.activity_edit_image);
+        initStatusBar();
         initView();
         initData();
         EventBus.getDefault().register(this);
+    }
+
+    private void initStatusBar() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            getWindow().getAttributes().layoutInDisplayCutoutMode =
+                    WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES;
+        }
+        getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_FULLSCREEN);
     }
 
     private void initData() {
@@ -64,7 +74,7 @@ public class EditImageActivity extends BaseActivity implements View.OnClickListe
             @Override
             public void subscribe(@NonNull ObservableEmitter<Bitmap> emitter) throws Throwable {
                 Bitmap bitmap = ImageLoadUtils.getBitmap(new ImageLoadUtils.ImageBuilder(EditImageActivity.this, uri)
-                        .setSize(ScreenUtils.getScreenWidth(), ScreenUtils.getScreenHeight() - bottomHeight)
+                        .setSize(ScreenUtils.getScreenWidth(), ScreenUtils.getScreenHeight() - 2 * bottomHeight)
                         .setScaleType(ImageView.ScaleType.FIT_CENTER));
                 emitter.onNext(bitmap);
             }
@@ -75,8 +85,8 @@ public class EditImageActivity extends BaseActivity implements View.OnClickListe
                         ViewGroup.MarginLayoutParams params = (ViewGroup.MarginLayoutParams) binding.img.getLayoutParams();
                         params.width = bitmap.getWidth();
                         params.height = bitmap.getHeight();
-                        params.topMargin = (ScreenUtils.getScreenHeight() - bottomHeight - bitmap.getHeight()) / 2;
-                        params.leftMargin = (ScreenUtils.getScreenWidth() - bitmap.getWidth()) / 2;
+                        //params.topMargin = (ScreenUtils.getScreenHeight() - 2 * bottomHeight - bitmap.getHeight()) / 2;
+                        //params.leftMargin = (ScreenUtils.getScreenWidth() - bitmap.getWidth()) / 2;
                         binding.img.setLayoutParams(params);
                         binding.img.setImageBitmap(bitmap);
                     }
