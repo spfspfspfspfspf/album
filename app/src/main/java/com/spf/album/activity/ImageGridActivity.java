@@ -123,7 +123,7 @@ public class ImageGridActivity extends BaseActivity {
         @Override
         public void onBindViewHolder(@NonNull ImageHolder holder, int position) {
             ImageFile imageFile = imageFiles.get(position);
-            ImageLoadUtils.loadImage(new ImageLoadUtils.ImageBuilder(context, imageFile.getUri(), holder.ivImage)
+            ImageLoadUtils.loadImage(new ImageLoadUtils.ImageBuilder(context, imageFile.getPath(), holder.ivImage)
                     .setPlaceHolder(R.drawable.ic_image_placeholder_rect).setSize(imageSize, imageSize));
             if (imageFile.isVideo() && holder instanceof VideoHolder) {
                 VideoHolder videoHolder = (VideoHolder) holder;

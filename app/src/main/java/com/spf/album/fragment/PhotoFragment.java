@@ -11,22 +11,16 @@ import androidx.databinding.DataBindingUtil;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.spf.album.ImageFileLoader;
+import com.spf.album.CameraFileLoader;
 import com.spf.album.R;
 import com.spf.album.adapter.PhotoGridAdapter;
 import com.spf.album.databinding.FragmentPhotoBinding;
-import com.spf.album.event.ImageFileLoadedEvent;
+import com.spf.album.event.CameraFileLoadedEvent;
 import com.spf.album.model.ImageFile;
-import com.spf.album.utils.AppExecutors;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.SortedMap;
-import java.util.TreeMap;
 
 public class PhotoFragment extends BaseFragment {
     private FragmentPhotoBinding binding;
@@ -76,31 +70,18 @@ public class PhotoFragment extends BaseFragment {
 
     public void scrollToImage(ImageFile imageFile) {
         int position = photoGridAdapter.getPosition(imageFile);
-        //binding.recyclerView.scrollToPosition(position);
         ((GridLayoutManager) binding.recyclerView.getLayoutManager())
                 .scrollToPositionWithOffset(position, binding.tvTitle.getHeight());
     }
 
-    @Subscribe(threadMode = ThreadMode.BACKGROUND)
-    public void onEventImageFileLoaded(ImageFileLoadedEvent event) {
-        if (ImageFileLoader.getInstance().getCameraList().isEmpty()) {
+    @Subscribe(threadMode = ThreadMode.MAIN, sticky = true)
+    public void onEventCameraFileLoaded(CameraFileLoadedEvent event) {
+        if (CameraFileLoader.getInstance().getImageList().isEmpty()) {
             return;
         }
-        SortedMap<String, List<ImageFile>> imageFileMap = new TreeMap<>((o1, o2) -> o2.compareTo(o1));
-        for (ImageFile imageFile : ImageFileLoader.getInstance().getCameraList()) {
-            //String date = DateUtils.getDateStr(imageFile.getAddDate() * 1000);
-            List<ImageFile> dateImageList = imageFileMap.get(imageFile.getDate());
-            if (dateImageList == null) {
-                dateImageList = new ArrayList<>();
-                imageFileMap.put(imageFile.getDate(), dateImageList);
-            }
-            dateImageList.add(imageFile);
-        }
-        AppExecutors.getInstance().runOnUI(() -> {
-            nowTopDate = ImageFileLoader.getInstance().getCameraList().get(0).getDate();
-            binding.tvTitle.setText(nowTopDate);
-            photoGridAdapter.setImageFiles(imageFileMap);
-        });
+        nowTopDate = CameraFileLoader.getInstance().getImageList().get(0).getDate();
+        binding.tvTitle.setText(nowTopDate);
+        photoGridAdapter.setImageFiles(CameraFileLoader.getInstance().getImageMap());
     }
 
     @Override

@@ -7,7 +7,6 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Point;
 import android.graphics.Rect;
-import android.net.Uri;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
@@ -107,7 +106,7 @@ public class MarkLayout extends View {
     protected void onDraw(Canvas canvas) {
         for (MarkInfo mark : mMarkMap.values()) {
             if (mark.getBitmap() == null || mark.getBitmap().isRecycled()) {
-                LogUtils.d(TAG, "bitmap recycled - " + mark.getImageUri());
+                LogUtils.d(TAG, "bitmap recycled - " + mark.getImagePath());
             } else {
                 canvas.drawBitmap(mark.bitmap, mark.area.left, mark.area.top, null);
                 canvas.drawText(String.valueOf(mark.count), mark.area.centerX(), mark.area.centerY() + textDistance, textPaint);
@@ -117,14 +116,14 @@ public class MarkLayout extends View {
 
     public static class MarkInfo {
         private Rect area;
-        private Uri imageUri;
+        private String imagePath;
         private Bitmap bitmap;
         private int count;
 
-        public MarkInfo(Point point, Uri imageUri) {
+        public MarkInfo(Point point, String imagePath) {
             this.area = new Rect(point.x - radius, point.y - radius,
                     point.x + radius, point.y + radius);
-            this.imageUri = imageUri;
+            this.imagePath = imagePath;
             this.count = 1;
         }
 
@@ -137,8 +136,8 @@ public class MarkLayout extends View {
             this.area.set(point.x - radius, point.y - radius, point.x + radius, point.y + radius);
         }
 
-        public Uri getImageUri() {
-            return imageUri;
+        public String getImagePath() {
+            return imagePath;
         }
 
         public Bitmap getBitmap() {

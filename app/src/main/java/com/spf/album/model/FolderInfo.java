@@ -1,13 +1,11 @@
 package com.spf.album.model;
 
-import android.net.Uri;
-
 import java.util.ArrayList;
 
 public class FolderInfo {
     private String path;
     private String name;
-    private Uri thumbnail;
+    private String thumbnail;
     private ArrayList<ImageFile> imageFiles;
 
     public FolderInfo(String path, String name) {
@@ -27,7 +25,7 @@ public class FolderInfo {
     public void addImageFile(ImageFile imageFile) {
         imageFiles.add(imageFile);
         if (thumbnail == null) {
-            thumbnail = imageFile.getUri();
+            thumbnail = imageFile.getPath();
         }
     }
 
@@ -35,7 +33,7 @@ public class FolderInfo {
         return imageFiles;
     }
 
-    public Uri getThumbnail() {
+    public String getThumbnail() {
         return thumbnail;
     }
 }

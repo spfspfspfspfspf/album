@@ -89,7 +89,7 @@ public class ImageLoadUtils {
                             GalleryApplication.getApplication().sendBroadcast(mediaScanIntent);
                         }
                     });
-            ImageFileLoader.getInstance().update();
+            ImageFileLoader.getInstance().initOrUpdate();
             return file;
         } catch (IOException e) {
             e.printStackTrace();
@@ -99,7 +99,7 @@ public class ImageLoadUtils {
 
     public static class ImageBuilder {
         private Context context;
-        private Uri uri;
+        private String path;
         private ImageView imageView;
         private ImageView.ScaleType scaleType;
         private int width;
@@ -107,13 +107,13 @@ public class ImageLoadUtils {
         private int roundCorner;
         private int placeHolder;
 
-        public ImageBuilder(Context context, Uri uri) {
+        public ImageBuilder(Context context, String path) {
             this.context = context;
-            this.uri = uri;
+            this.path = path;
         }
 
-        public ImageBuilder(Context context, Uri uri, ImageView imageView) {
-            this(context, uri);
+        public ImageBuilder(Context context, String path, ImageView imageView) {
+            this(context, path);
             this.imageView = imageView;
         }
 
@@ -148,7 +148,7 @@ public class ImageLoadUtils {
     private static class GlideImageLoader implements ImageLoader {
         @Override
         public void loadImage(ImageBuilder imageBuilder) {
-            RequestBuilder<Drawable> requestBuilder = Glide.with(imageBuilder.context).load(imageBuilder.uri);
+            RequestBuilder<Drawable> requestBuilder = Glide.with(imageBuilder.context).load(imageBuilder.path);
             if (imageBuilder.placeHolder > 0) {
                 requestBuilder = requestBuilder.placeholder(imageBuilder.placeHolder);
             }
@@ -167,7 +167,7 @@ public class ImageLoadUtils {
 
         @Override
         public Bitmap getBitmap(ImageBuilder imageBuilder) {
-            RequestBuilder<Bitmap> requestBuilder = Glide.with(imageBuilder.context).asBitmap().load(imageBuilder.uri);
+            RequestBuilder<Bitmap> requestBuilder = Glide.with(imageBuilder.context).asBitmap().load(imageBuilder.path);
             if (imageBuilder.placeHolder > 0) {
                 requestBuilder = requestBuilder.placeholder(imageBuilder.placeHolder);
             }

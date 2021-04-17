@@ -72,7 +72,7 @@ public class ImagePreviewActivity extends BaseActivity {
                 if (imageFile == null) {
                     return;
                 }
-                EditImageActivity.start(ImagePreviewActivity.this, imageFile.getUri());
+                EditImageActivity.start(ImagePreviewActivity.this, imageFile.getPath());
             }
         });
     }
@@ -180,7 +180,7 @@ public class ImagePreviewActivity extends BaseActivity {
             if (imageFile.isVideo()) {
                 ImageView thumbImageView = new ImageView(activity);
                 thumbImageView.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
-                ImageLoadUtils.loadImage(new ImageLoadUtils.ImageBuilder(activity, imageFile.getUri(), thumbImageView)
+                ImageLoadUtils.loadImage(new ImageLoadUtils.ImageBuilder(activity, imageFile.getPath(), thumbImageView)
                         .setScaleType(ImageView.ScaleType.FIT_CENTER));
 
                 StandardGSYVideoPlayer videoPlayer = new StandardGSYVideoPlayer(activity);
@@ -191,7 +191,7 @@ public class ImagePreviewActivity extends BaseActivity {
             } else {
                 PhotoView photoView = new PhotoView(activity);
                 container.addView(photoView, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
-                ImageLoadUtils.loadImage(new ImageLoadUtils.ImageBuilder(activity, imageFile.getUri(), photoView)
+                ImageLoadUtils.loadImage(new ImageLoadUtils.ImageBuilder(activity, imageFile.getPath(), photoView)
                         .setScaleType(ImageView.ScaleType.FIT_CENTER));
 
                 photoView.setOnClickListener(new View.OnClickListener() {

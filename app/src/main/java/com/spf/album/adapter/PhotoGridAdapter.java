@@ -63,7 +63,6 @@ public class PhotoGridAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
     }
 
     public int getSpanSize(int position) {
-        ImageFile imageFile = imageList.get(position);
         if (TYPE_TITLE == getItemViewType(position)) {
             return COLUMN_COUNT;
         } else {
@@ -110,7 +109,7 @@ public class PhotoGridAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
             ((TitleViewHolder) holder).tvTitle.setText(imageFile.getDate());
         } else {
             ImageViewHolder imageHolder = (ImageViewHolder) holder;
-            ImageLoadUtils.loadImage(new ImageLoadUtils.ImageBuilder(context, imageFile.getUri(), imageHolder.ivImage)
+            ImageLoadUtils.loadImage(new ImageLoadUtils.ImageBuilder(context, imageFile.getPath(), imageHolder.ivImage)
                     .setPlaceHolder(R.drawable.ic_image_placeholder_rect).setSize(imageSize, imageSize));
             if (imageFile.isVideo() && holder instanceof VideoViewHolder) {
                 ((VideoViewHolder) holder).tvDuration.setText(imageFile.getDuration());

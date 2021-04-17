@@ -13,6 +13,7 @@ import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentPagerAdapter;
 import androidx.viewpager.widget.ViewPager;
 
+import com.spf.album.CameraFileLoader;
 import com.spf.album.ImageFileLoader;
 import com.spf.album.R;
 import com.spf.album.databinding.ActivityMainBinding;
@@ -54,13 +55,14 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
         binding = DataBindingUtil.setContentView(this, R.layout.activity_main);
         initFragment(savedInstanceState);
         initBottomBar();
-        EventBus.getDefault().register(this);
 
         if (EasyPermissions.hasPermissions(this, permissions)) {
-            ImageFileLoader.getInstance().init();
+            CameraFileLoader.getInstance().init();
         } else {
             EasyPermissions.requestPermissions(this, "为了正常使用应用，需要读写存储权限", REQUEST_CODE, permissions);
         }
+
+        EventBus.getDefault().register(this);
     }
 
     @Override
@@ -72,7 +74,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
     @Override
     public void onPermissionsGranted(int requestCode, @NonNull List<String> perms) {
         if (requestCode == REQUEST_CODE) {
-            ImageFileLoader.getInstance().init();
+            CameraFileLoader.getInstance().init();
         }
     }
 
@@ -84,7 +86,6 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
     }
 
     private void initStatusBar() {
-        //binding.viewPager.setPadding(0, ScreenUtils.getStatusBarHeight(), 0, 0);
         getWindow().clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
@@ -191,7 +192,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
     }
 
     static class MainPageAdapter extends FragmentPagerAdapter {
-        private List<Fragment> fragments;
+        private final List<Fragment> fragments;
 
         MainPageAdapter(FragmentManager fm, List<Fragment> fragments) {
             super(fm, FragmentPagerAdapter.BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT);

@@ -4,7 +4,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Rect;
-import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -43,7 +42,7 @@ import io.reactivex.rxjava3.functions.Consumer;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 
 public class EditImageActivity extends BaseActivity implements View.OnClickListener {
-    private static final String KEY_URI = "key_uri";
+    private static final String KEY_PATH = "key_path";
     private ActivityEditImageBinding binding;
     private CompositeDisposable disposable;
     private int bottomHeight;
@@ -67,13 +66,13 @@ public class EditImageActivity extends BaseActivity implements View.OnClickListe
     }
 
     private void initData() {
-        Uri uri = getIntent().getParcelableExtra(KEY_URI);
+        String path = getIntent().getStringExtra(KEY_PATH);
         bottomHeight = GalleryApplication.getApplication().getResources().getDimensionPixelOffset(R.dimen.dp_50);
         disposable = new CompositeDisposable();
         disposable.add(Observable.create(new ObservableOnSubscribe<Bitmap>() {
             @Override
             public void subscribe(@NonNull ObservableEmitter<Bitmap> emitter) throws Throwable {
-                Bitmap bitmap = ImageLoadUtils.getBitmap(new ImageLoadUtils.ImageBuilder(EditImageActivity.this, uri)
+                Bitmap bitmap = ImageLoadUtils.getBitmap(new ImageLoadUtils.ImageBuilder(EditImageActivity.this, path)
                         .setSize(ScreenUtils.getScreenWidth(), ScreenUtils.getScreenHeight() - 2 * bottomHeight)
                         .setScaleType(ImageView.ScaleType.FIT_CENTER));
                 emitter.onNext(bitmap);
@@ -85,8 +84,6 @@ public class EditImageActivity extends BaseActivity implements View.OnClickListe
                         ViewGroup.MarginLayoutParams params = (ViewGroup.MarginLayoutParams) binding.img.getLayoutParams();
                         params.width = bitmap.getWidth();
                         params.height = bitmap.getHeight();
-                        //params.topMargin = (ScreenUtils.getScreenHeight() - 2 * bottomHeight - bitmap.getHeight()) / 2;
-                        //params.leftMargin = (ScreenUtils.getScreenWidth() - bitmap.getWidth()) / 2;
                         binding.img.setLayoutParams(params);
                         binding.img.setImageBitmap(bitmap);
                     }
@@ -185,9 +182,9 @@ public class EditImageActivity extends BaseActivity implements View.OnClickListe
         super.onDestroy();
     }
 
-    public static void start(Context context, Uri uri) {
+    public static void start(Context context, String path) {
         Intent intent = new Intent(context, EditImageActivity.class);
-        intent.putExtra(KEY_URI, uri);
+        intent.putExtra(KEY_PATH, path);
         context.startActivity(intent);
     }
 }

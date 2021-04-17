@@ -13,9 +13,10 @@ import androidx.annotation.Nullable;
 import com.amap.api.maps.AMap;
 import com.amap.api.maps.MapView;
 import com.amap.api.maps.model.CameraPosition;
+import com.spf.album.CameraFileLoader;
 import com.spf.album.IScreenLocation;
-import com.spf.album.ImageFileLoader;
 import com.spf.album.R;
+import com.spf.album.event.CameraFileLoadedEvent;
 import com.spf.album.event.ImageFileLoadedEvent;
 import com.spf.album.model.GaoDeImageFile;
 import com.spf.album.model.ImageFile;
@@ -90,8 +91,8 @@ public class GaoDeLocationFragment extends BaseFragment implements IScreenLocati
         return mMap.getProjection().getVisibleRegion().latLngBounds.contains(((GaoDeImageFile) imageFile).getLatLng());
     }
 
-    @Subscribe(threadMode = ThreadMode.BACKGROUND)
-    public void onEventImageFileLoaded(ImageFileLoadedEvent event) {
+    @Subscribe(threadMode = ThreadMode.POSTING)
+    public void onEventCameraFileLoaded(CameraFileLoadedEvent event) {
         isFileListInit = true;
     }
 
@@ -103,7 +104,7 @@ public class GaoDeLocationFragment extends BaseFragment implements IScreenLocati
         mMarkMap.clear();
         isImageBitmapInit = false;
         AppExecutors.getInstance().runOnBackground(() -> {
-            for (ImageFile item : ImageFileLoader.getInstance().getCameraList()) {
+            for (ImageFile item : CameraFileLoader.getInstance().getImageList()) {
                 GaoDeImageFile imageFile = (GaoDeImageFile) item;
                 if (imageFile.getLatLng() == null) {
                     continue;
@@ -119,14 +120,14 @@ public class GaoDeLocationFragment extends BaseFragment implements IScreenLocati
                     }
 
                     if (markInfo == null) {
-                        markInfo = new MarkLayout.MarkInfo(point, imageFile.getUri());
+                        markInfo = new MarkLayout.MarkInfo(point, imageFile.getPath());
                         mMarkMap.put(imageFile, markInfo);
                     } else {
                         markInfo.addCount();
                     }
                     if (markInfo.getBitmap() == null || markInfo.getBitmap().isRecycled()) {
                         markInfo.setBitmap(ImageLoadUtils.getBitmap(new ImageLoadUtils.ImageBuilder(
-                                getContext(), imageFile.getUri())
+                                getContext(), imageFile.getPath())
                                 .setScaleType(ImageView.ScaleType.CENTER_CROP)
                                 .setRoundCorner(corner)
                                 .setSize(2 * MarkLayout.radius, 2 * MarkLayout.radius)));

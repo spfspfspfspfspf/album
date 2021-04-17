@@ -1,6 +1,5 @@
 package com.spf.album.model;
 
-import android.net.Uri;
 import android.os.Parcel;
 import android.os.Parcelable;
 
@@ -14,24 +13,21 @@ public class ImageFile implements Parcelable {
     protected long id;
     protected String path;
     protected String name;
-    protected long addDate;
     protected String date;
     protected String mediaType;
     protected long size;
     protected double latitude;
     protected double longitude;
-    protected Uri uri;
     protected String duration;
 
     public ImageFile() {
     }
 
-    public ImageFile(long id, String path, String name, long addDate, String mediaType, long size) {
+    public ImageFile(long id, String path, String name, long date, String mediaType, long size) {
         this.id = id;
         this.path = path;
         this.name = name;
-        this.addDate = addDate;
-        this.date = DateUtils.getDateStr(addDate * 1000);
+        this.date = DateUtils.getDateStr(date);
         this.mediaType = mediaType;
         this.size = size;
     }
@@ -40,13 +36,11 @@ public class ImageFile implements Parcelable {
         id = in.readLong();
         path = in.readString();
         name = in.readString();
-        addDate = in.readLong();
         date = in.readString();
         mediaType = in.readString();
         size = in.readLong();
         latitude = in.readDouble();
         longitude = in.readDouble();
-        uri = in.readParcelable(Uri.class.getClassLoader());
         duration = in.readString();
     }
 
@@ -81,10 +75,6 @@ public class ImageFile implements Parcelable {
         return name;
     }
 
-    public long getAddDate() {
-        return addDate;
-    }
-
     public String getDate() {
         return date;
     }
@@ -99,14 +89,6 @@ public class ImageFile implements Parcelable {
 
     public double getLongitude() {
         return longitude;
-    }
-
-    public Uri getUri() {
-        return uri;
-    }
-
-    public void setUri(Uri uri) {
-        this.uri = uri;
     }
 
     public void setLatLng(double latitude, double longitude) {
@@ -144,19 +126,17 @@ public class ImageFile implements Parcelable {
         dest.writeLong(id);
         dest.writeString(path);
         dest.writeString(name);
-        dest.writeLong(addDate);
         dest.writeString(date);
         dest.writeString(mediaType);
         dest.writeLong(size);
         dest.writeDouble(latitude);
         dest.writeDouble(longitude);
-        dest.writeParcelable(uri, flags);
         dest.writeString(duration);
     }
 
     @Override
     public int hashCode() {
-        return uri.hashCode();
+        return path.hashCode();
     }
 
     @Override
@@ -165,7 +145,7 @@ public class ImageFile implements Parcelable {
             return false;
         }
         if (obj instanceof ImageFile) {
-            return uri.equals(((ImageFile) obj).uri);
+            return path.equals(((ImageFile) obj).path);
         }
         return false;
     }
